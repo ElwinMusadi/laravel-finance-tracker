@@ -24,41 +24,41 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: (
         <IconDashboard
         />
       ),
     },
     {
-      title: "Lifecycle",
-      url: "#",
+      title: "Accounts",
+      url: "/accounts",
       icon: (
         <IconListDetails
         />
       ),
     },
     {
-      title: "Analytics",
-      url: "#",
+      title: "Contacts",
+      url: "/contacts",
+      icon: (
+        <IconUsers
+        />
+      ),
+    },
+    {
+      title: "Transactions",
+      url: "/transactions",
       icon: (
         <IconChartBar
         />
       ),
     },
     {
-      title: "Projects",
-      url: "#",
+      title: "Budgets",
+      url: "/budgets",
       icon: (
         <IconFolder
-        />
-      ),
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: (
-        <IconUsers
         />
       ),
     },

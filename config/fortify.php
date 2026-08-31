@@ -161,7 +161,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Features::registration(), // Disabled: single-tenant personal app, admin seeded via CLI
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([
