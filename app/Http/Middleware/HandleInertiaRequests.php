@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Account;
+use App\Models\Category;
+use App\Models\Contact;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,7 +44,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'accounts' => $request->user() ? \App\Models\Account::active()->orderBy('name')->get() : [],
+            'accounts' => $request->user() ? Account::active()->orderBy('name')->get() : [],
+            'categories' => $request->user() ? Category::active()->orderBy('type')->orderBy('name')->get() : [],
+            'contacts' => $request->user() ? Contact::active()->orderBy('name')->get() : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

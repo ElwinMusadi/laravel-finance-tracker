@@ -2,51 +2,38 @@
 
 namespace App\Models;
 
-use Database\Factories\ContactFactory;
+use App\Enums\CategoryType;
+use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
- * @property int $id
- * @property string $name
- * @property bool $is_active
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CategoryType $type
  */
-#[Fillable(['name', 'is_active'])]
-class Contact extends Model
+#[Fillable(['name', 'type', 'budget_limit', 'icon', 'color', 'is_active'])]
+class Category extends Model
 {
-    /** @use HasFactory<ContactFactory> */
+    /** @use HasFactory<CategoryFactory> */
     use HasFactory;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
+            'type' => CategoryType::class,
+            'budget_limit' => 'decimal:2',
             'is_active' => 'boolean',
         ];
     }
 
-    /**
-     * Get debt and receivable transactions linked to this contact.
-     */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
     }
 
-    /**
-     * Scope: only active contacts.
-     */
     #[Scope]
     protected function active(Builder $query): Builder
     {

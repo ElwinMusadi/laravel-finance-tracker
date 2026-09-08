@@ -2,132 +2,100 @@
 
 namespace App\Services;
 
+use App\Enums\CategoryType;
+use App\Enums\TransactionAction;
 use App\Models\Account;
+use App\Models\Category;
 use App\Models\Transaction;
-use Illuminate\Support\Carbon;
+use Carbon\CarbonInterface;
 
-/**
- * Service for calculating account balances from the ledger.
- *
- * Balance = SUM(incoming) - SUM(outgoing)
- *
- * Aggregations are separated to avoid MySQL BIGINT UNSIGNED subtraction errors.
- * The subtraction is performed in PHP where negative results are safe.
- */
 class LedgerService
 {
-    /**
-     * Calculate the current balance for a given account.
-     *
-     * @return string Balance as a decimal string (can be negative)
-     */
     public function getAccountBalance(Account $account): string
     {
-        $incoming = Transaction::where('destination_account_id', $account->id)
-            ->sum('amount');
-
-        $outgoing = Transaction::where('source_account_id', $account->id)
-            ->sum('amount');
-
-        return bcsub((string) $incoming, (string) $outgoing, 2);
+        return $this->getAccountBalanceAsOf($account, now());
     }
 
-    /**
-     * Calculate the balance for a given account up to a specific date.
-     *
-     * @return string Balance as a decimal string (can be negative)
-     */
-    public function getAccountBalanceAsOf(Account $account, \Carbon\CarbonInterface $date): string
+    public function getAccountBalanceAsOf(Account $account, CarbonInterface $date): string
     {
-        $incoming = Transaction::where('destination_account_id', $account->id)
+        $total = '0.00';
+        $transactions = Transaction::query()
+            ->with('category')
             ->where('transaction_date', '<=', $date)
-            ->sum('amount');
+            ->where(fn ($query) => $query->where('account_id', $account->id)->orWhere('transfer_account_id', $account->id))
+            ->get();
 
-        $outgoing = Transaction::where('source_account_id', $account->id)
-            ->where('transaction_date', '<=', $date)
-            ->sum('amount');
+        foreach ($transactions as $transaction) {
+            $total = bcadd($total, $this->getAccountEffect($transaction, $account), 2);
+        }
 
-        return bcsub((string) $incoming, (string) $outgoing, 2);
+        return $total;
     }
 
-    /**
-     * Calculate the total spent (actual) for an expense account in a given month.
-     *
-     * Budget actual = SUM(amount) where destination = expense account within the month.
-     *
-     * @param  \Carbon\CarbonInterface  $monthStart  First day of the month in UTC
-     * @param  \Carbon\CarbonInterface  $monthEnd  Last moment of the month in UTC
-     * @return string Total spent as a decimal string
-     */
-    public function getExpenseActual(Account $account, \Carbon\CarbonInterface $monthStart, \Carbon\CarbonInterface $monthEnd): string
+    public function getExpenseActual(Category $category, CarbonInterface $monthStart, CarbonInterface $monthEnd): string
     {
-        $sum = Transaction::where('destination_account_id', $account->id)
+        $sum = Transaction::query()
+            ->where('category_id', $category->id)
             ->whereBetween('transaction_date', [$monthStart, $monthEnd])
             ->sum('amount');
 
         return number_format((float) $sum, 2, '.', '');
     }
 
-    /**
-     * Calculate balances for all accounts of a given type.
-     *
-     * @return array<int, array{account: Account, balance: string}>
-     */
-    public function getBalancesByType(string $type): array
+    public function getTotalAccountBalance(): string
     {
-        $accounts = Account::ofType($type)->active()->get();
-
-        return $accounts->map(fn (Account $account): array => [
-            'account' => $account,
-            'balance' => $this->getAccountBalance($account),
-        ])->all();
-    }
-
-    /**
-     * Calculate total balance across all asset accounts.
-     *
-     * @return string Total balance as a decimal string
-     */
-    public function getTotalAssetBalance(): string
-    {
-        $accounts = Account::ofType('asset')->active()->get();
         $total = '0.00';
-
-        foreach ($accounts as $account) {
+        foreach (Account::active()->get() as $account) {
             $total = bcadd($total, $this->getAccountBalance($account), 2);
         }
 
         return $total;
     }
 
-    /**
-     * Calculate total income for a given UTC date range.
-     *
-     * Income = transactions where source is revenue and destination is asset.
-     *
-     * @return string Total income as a decimal string
-     */
-    public function getTotalIncome(\Carbon\CarbonInterface $start, \Carbon\CarbonInterface $end): string
+    public function getTotalDebt(): string
     {
-        $sum = Transaction::whereHas('sourceAccount', fn ($q) => $q->where('type', 'revenue'))
-            ->whereBetween('transaction_date', [$start, $end])
-            ->sum('amount');
-
-        return number_format((float) $sum, 2, '.', '');
+        return $this->getOpenBalanceForCategory(CategoryType::Debt, TransactionAction::ReceiveLoan, TransactionAction::RepayDebt);
     }
 
-    /**
-     * Calculate total expenses for a given UTC date range.
-     *
-     * Expense = transactions where destination is expense account.
-     *
-     * @return string Total expenses as a decimal string
-     */
-    public function getTotalExpenses(\Carbon\CarbonInterface $start, \Carbon\CarbonInterface $end): string
+    public function getTotalReceivable(): string
     {
-        $sum = Transaction::whereHas('destinationAccount', fn ($q) => $q->where('type', 'expense'))
-            ->whereBetween('transaction_date', [$start, $end])
-            ->sum('amount');
+        return $this->getOpenBalanceForCategory(CategoryType::Receivable, TransactionAction::GiveLoan, TransactionAction::ReceiveRepayment);
+    }
+
+    public function getTotalIncome(CarbonInterface $start, CarbonInterface $end): string
+    {
+        return $this->getCategoryAmount(CategoryType::Income, $start, $end);
+    }
+
+    public function getTotalExpenses(CarbonInterface $start, CarbonInterface $end): string
+    {
+        return $this->getCategoryAmount(CategoryType::Expense, $start, $end);
+    }
+
+    private function getAccountEffect(Transaction $transaction, Account $account): string
+    {
+        if ($transaction->category->type === CategoryType::Transfer) {
+            return $transaction->account_id === $account->id ? bcmul($transaction->amount, '-1', 2) : $transaction->amount;
+        }
+
+        $addsToAccount = in_array($transaction->category->type, [CategoryType::Income, CategoryType::OpeningBalance], true)
+            || $transaction->action === TransactionAction::ReceiveLoan
+            || $transaction->action === TransactionAction::ReceiveRepayment;
+
+        return $addsToAccount ? $transaction->amount : bcmul($transaction->amount, '-1', 2);
+    }
+
+    private function getOpenBalanceForCategory(CategoryType $type, TransactionAction $increaseAction, TransactionAction $decreaseAction): string
+    {
+        $increase = Transaction::query()->whereHas('category', fn ($query) => $query->where('type', $type->value))->where('action', $increaseAction->value)->sum('amount');
+        $decrease = Transaction::query()->whereHas('category', fn ($query) => $query->where('type', $type->value))->where('action', $decreaseAction->value)->sum('amount');
+
+        return bcsub((string) $increase, (string) $decrease, 2);
+    }
+
+    private function getCategoryAmount(CategoryType $type, CarbonInterface $start, CarbonInterface $end): string
+    {
+        $sum = Transaction::query()->whereHas('category', fn ($query) => $query->where('type', $type->value))->whereBetween('transaction_date', [$start, $end])->sum('amount');
 
         return number_format((float) $sum, 2, '.', '');
     }

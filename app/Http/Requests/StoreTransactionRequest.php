@@ -2,61 +2,84 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Account;
-use App\Services\AccountTypeMatrix;
+use App\Enums\CategoryType;
+use App\Enums\TransactionAction;
+use App\Models\Category;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class StoreTransactionRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
+    /** @return array<string, ValidationRule|array<mixed>|string> */
     public function rules(): array
     {
         return [
             'transaction_date' => ['required', 'date'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'description' => ['required', 'string', 'max:255'],
-            'source_account_id' => ['required', 'integer', 'exists:accounts,id'],
-            'destination_account_id' => ['required', 'integer', 'exists:accounts,id', 'different:source_account_id'],
+            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'account_id' => ['required', 'integer', 'exists:accounts,id'],
+            'transfer_account_id' => ['nullable', 'integer', 'exists:accounts,id'],
+            'contact_id' => ['nullable', 'integer', 'exists:contacts,id'],
+            'action' => ['nullable', Rule::enum(TransactionAction::class)],
             'notes' => ['nullable', 'string'],
         ];
     }
 
-    /**
-     * Configure the validator instance.
-     */
     public function withValidator(Validator $validator): void
     {
-        $validator->after(function ($validator) {
-            $sourceId = $this->input('source_account_id');
-            $destinationId = $this->input('destination_account_id');
+        $validator->after(function (Validator $validator): void {
+            $category = Category::find($this->integer('category_id'));
 
-            if ($sourceId && $destinationId) {
-                $source = Account::find($sourceId);
-                $destination = Account::find($destinationId);
+            if ($category === null) {
+                return;
+            }
 
-                if ($source && $destination) {
-                    $matrix = app(AccountTypeMatrix::class);
-                    if (! $matrix->isValidCombination($source->type, $destination->type)) {
-                        $validator->errors()->add(
-                            'destination_account_id',
-                            $matrix->getErrorMessage($source->type, $destination->type)
-                        );
-                    }
+            $type = $category->type;
+            if ($type->isSystemOnly()) {
+                $validator->errors()->add('category_id', 'Kategori saldo awal hanya dapat dibuat oleh sistem.');
+            }
+
+            if ($type === CategoryType::Transfer) {
+                if (! $this->filled('transfer_account_id')) {
+                    $validator->errors()->add('transfer_account_id', 'Akun tujuan transfer wajib diisi.');
                 }
+                if ($this->integer('account_id') === $this->integer('transfer_account_id')) {
+                    $validator->errors()->add('transfer_account_id', 'Akun transfer harus berbeda.');
+                }
+                if ($this->filled('contact_id') || $this->filled('action')) {
+                    $validator->errors()->add('category_id', 'Transfer tidak boleh memiliki kontak atau aksi utang/piutang.');
+                }
+
+                return;
+            }
+
+            if ($this->filled('transfer_account_id')) {
+                $validator->errors()->add('transfer_account_id', 'Hanya kategori transfer yang dapat memiliki akun tujuan.');
+            }
+
+            if ($type->requiresContact()) {
+                if (! $this->filled('contact_id')) {
+                    $validator->errors()->add('contact_id', 'Kontak wajib diisi untuk utang atau piutang.');
+                }
+                if (! $this->filled('action')) {
+                    $validator->errors()->add('action', 'Aksi wajib diisi untuk utang atau piutang.');
+                } elseif (! TransactionAction::tryFrom((string) $this->input('action'))?->isValidFor($type)) {
+                    $validator->errors()->add('action', 'Aksi tidak sesuai dengan kategori transaksi.');
+                }
+
+                return;
+            }
+
+            if ($this->filled('contact_id') || $this->filled('action')) {
+                $validator->errors()->add('category_id', 'Kategori ini tidak boleh memiliki kontak atau aksi utang/piutang.');
             }
         });
     }

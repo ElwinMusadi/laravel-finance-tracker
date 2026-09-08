@@ -16,7 +16,7 @@ class ContactController extends Controller
      */
     public function index(): Response
     {
-        $contacts = Contact::with('accounts')->latest()->get();
+        $contacts = Contact::withCount('transactions')->latest()->get();
 
         return Inertia::render('contacts/index', [
             'contacts' => $contacts,
@@ -48,9 +48,9 @@ class ContactController extends Controller
      */
     public function destroy(Contact $contact): RedirectResponse
     {
-        if ($contact->accounts()->exists()) {
+        if ($contact->transactions()->exists()) {
             return redirect()->route('contacts.index')
-                ->with('error', 'Kontak tidak dapat dihapus karena memiliki akun yang terhubung. Nonaktifkan kontak tersebut.');
+                ->with('error', 'Kontak tidak dapat dihapus karena memiliki transaksi utang atau piutang. Nonaktifkan kontak tersebut.');
         }
 
         $contact->delete();

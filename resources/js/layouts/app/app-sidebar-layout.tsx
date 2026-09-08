@@ -12,7 +12,7 @@ export default function AppSidebarLayout({
     breadcrumbs = [],
 }: AppLayoutProps) {
     const { isOpen, closeModal, transaction } = useTransactionModal();
-    const { accounts } = usePage<any>().props;
+    const { accounts, categories, contacts } = usePage<any>().props;
 
     return (
         <AppShell variant="sidebar">
@@ -27,6 +27,8 @@ export default function AppSidebarLayout({
                 onClose={closeModal}
                 transaction={transaction}
                 accounts={accounts || []}
+                categories={categories || []}
+                contacts={contacts || []}
             />
         </AppShell>
     );

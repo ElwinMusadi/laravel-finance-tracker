@@ -1,236 +1,41 @@
 import { useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { store, update } from '@/actions/App/Http/Controllers/TransactionController';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-import { store, update } from '@/actions/App/Http/Controllers/TransactionController';
+type Account = { id: number; name: string };
+type Contact = { id: number; name: string };
+type Category = { id: number; name: string; type: string };
+type Transaction = { id: number; transaction_date: string; amount: string; description: string; category_id: number; account_id: number; transfer_account_id: number | null; contact_id: number | null; action: string | null; notes: string | null };
 
-interface Account {
-    id: number;
-    name: string;
-    type: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
-    balance?: string;
-}
-
-interface Transaction {
-    id: number;
-    transaction_date: string;
-    amount: string;
-    description: string;
-    source_account_id: number;
-    destination_account_id: number;
-    notes: string | null;
-}
-
-interface Props {
-    isOpen: boolean;
-    onClose: () => void;
-    transaction?: Transaction | null;
-    accounts: Account[];
-}
-
-export function TransactionFormModal({ isOpen, onClose, transaction, accounts }: Props) {
-    const isEditing = !!transaction;
-
-    const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
-        transaction_date: new Date().toISOString().split('T')[0] + 'T12:00', // Default to today noon
-        amount: '',
-        description: '',
-        source_account_id: '' as number | '',
-        destination_account_id: '' as number | '',
-        notes: '',
-    });
+export function TransactionFormModal({ isOpen, onClose, transaction, accounts, categories, contacts }: { isOpen: boolean; onClose: () => void; transaction?: Transaction | null; accounts: Account[]; categories: Category[]; contacts: Contact[] }) {
+    const form = useForm({ transaction_date: '', amount: '', description: '', category_id: '' as number | '', account_id: '' as number | '', transfer_account_id: '' as number | '', contact_id: '' as number | '', action: '', notes: '' });
+    const category = categories.find((item) => item.id === form.data.category_id);
+    const needsContact = category?.type === 'debt' || category?.type === 'receivable';
+    const isTransfer = category?.type === 'transfer';
 
     useEffect(() => {
-        if (isOpen) {
-            if (transaction) {
-                // Formatting datetime for datetime-local input
-                const dt = new Date(transaction.transaction_date);
-                // Adjust for local timezone offset to display properly in datetime-local
-                const tzOffset = dt.getTimezoneOffset() * 60000;
-                const localISOTime = (new Date(dt.getTime() - tzOffset)).toISOString().slice(0, 16);
-                
-                setData({
-                    transaction_date: localISOTime,
-                    amount: transaction.amount,
-                    description: transaction.description,
-                    source_account_id: transaction.source_account_id,
-                    destination_account_id: transaction.destination_account_id,
-                    notes: transaction.notes || '',
-                });
-            } else {
-                // Reset defaults
-                const now = new Date();
-                const tzOffset = now.getTimezoneOffset() * 60000;
-                const localISOTime = (new Date(now.getTime() - tzOffset)).toISOString().slice(0, 16);
-                
-                setData({
-                    transaction_date: localISOTime,
-                    amount: '',
-                    description: '',
-                    source_account_id: '',
-                    destination_account_id: '',
-                    notes: '',
-                });
-            }
-            clearErrors();
-        }
+        if (!isOpen) return;
+        const current = transaction ? new Date(transaction.transaction_date) : new Date();
+        const value = new Date(current.getTime() - current.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        form.setData(transaction ? { transaction_date: value, amount: transaction.amount, description: transaction.description, category_id: transaction.category_id, account_id: transaction.account_id, transfer_account_id: transaction.transfer_account_id ?? '', contact_id: transaction.contact_id ?? '', action: transaction.action ?? '', notes: transaction.notes ?? '' } : { transaction_date: value, amount: '', description: '', category_id: '', account_id: '', transfer_account_id: '', contact_id: '', action: '', notes: '' });
+        form.clearErrors();
     }, [isOpen, transaction]);
 
-    const submit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const submit = (event: React.FormEvent) => { event.preventDefault(); transaction ? form.put(update.url(transaction.id), { onSuccess: onClose }) : form.post(store.url(), { onSuccess: onClose }); };
+    const options = (items: Account[] | Contact[] | Category[]) => items.map((item) => <SelectItem key={item.id} value={String(item.id)}>{item.name}</SelectItem>);
 
-        if (isEditing) {
-            put(update.url(transaction.id), {
-                onSuccess: () => onClose(),
-            });
-        } else {
-            post(store.url(), {
-                onSuccess: () => onClose(),
-            });
-        }
-    };
-
-    // Group accounts by type for Select dropdowns
-    const groupedAccounts = accounts.reduce((acc, account) => {
-        if (!acc[account.type]) {
-            acc[account.type] = [];
-        }
-        acc[account.type].push(account);
-        return acc;
-    }, {} as Record<string, Account[]>);
-
-    const renderAccountOptions = () => {
-        const order = ['asset', 'liability', 'revenue', 'expense', 'equity'];
-        return order.map((type) => {
-            if (!groupedAccounts[type]) return null;
-            return (
-                <SelectGroup key={type}>
-                    <SelectLabel className="uppercase text-xs tracking-wider font-semibold text-muted-foreground bg-muted/50 py-1">
-                        {type}
-                    </SelectLabel>
-                    {groupedAccounts[type].map((account) => (
-                        <SelectItem key={account.id} value={String(account.id)}>
-                            {account.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            );
-        });
-    };
-
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px]">
-                <form onSubmit={submit}>
-                    <DialogHeader>
-                        <DialogTitle>{isEditing ? 'Ubah Transaksi' : 'Catat Transaksi'}</DialogTitle>
-                        <DialogDescription>
-                            {isEditing 
-                                ? 'Perbarui detail entri buku besar ini.'
-                                : 'Catat transaksi keuangan baru antara dua akun.'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="transaction_date">Tanggal &amp; Waktu</Label>
-                            <Input
-                                id="transaction_date"
-                                type="datetime-local"
-                                value={data.transaction_date}
-                                onChange={(e) => setData('transaction_date', e.target.value)}
-                                required
-                            />
-                            {errors.transaction_date && <p className="text-sm text-destructive">{errors.transaction_date}</p>}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="source_account_id">Sumber (Dari)</Label>
-                                <Select 
-                                    value={String(data.source_account_id)} 
-                                    onValueChange={(val) => setData('source_account_id', Number(val))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih akun sumber" />
-                                    </SelectTrigger>
-                                    <SelectContent className="max-h-[300px]">
-                                        {renderAccountOptions()}
-                                    </SelectContent>
-                                </Select>
-                                {errors.source_account_id && <p className="text-sm text-destructive">{errors.source_account_id}</p>}
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="destination_account_id">Tujuan (Ke)</Label>
-                                <Select 
-                                    value={String(data.destination_account_id)} 
-                                    onValueChange={(val) => setData('destination_account_id', Number(val))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih akun tujuan" />
-                                    </SelectTrigger>
-                                    <SelectContent className="max-h-[300px]">
-                                        {renderAccountOptions()}
-                                    </SelectContent>
-                                </Select>
-                                {errors.destination_account_id && <p className="text-sm text-destructive">{errors.destination_account_id}</p>}
-                            </div>
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="amount">Jumlah (IDR)</Label>
-                            <Input
-                                id="amount"
-                                type="number"
-                                step="0.01"
-                                min="0.01"
-                                value={data.amount}
-                                onChange={(e) => setData('amount', e.target.value)}
-                                placeholder="0.00"
-                                required
-                            />
-                            {errors.amount && <p className="text-sm text-destructive">{errors.amount}</p>}
-                        </div>
-                        
-                        <div className="grid gap-2">
-                            <Label htmlFor="description">Deskripsi</Label>
-                            <Input
-                                id="description"
-                                value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
-                                placeholder="cth. Gaji Bulanan, Belanja, Sewa"
-                                required
-                            />
-                            {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="notes">Catatan (Opsional)</Label>
-                            <Input
-                                id="notes"
-                                value={data.notes}
-                                onChange={(e) => setData('notes', e.target.value)}
-                                placeholder="Detail tambahan"
-                            />
-                            {errors.notes && <p className="text-sm text-destructive">{errors.notes}</p>}
-                        </div>
-                    </div>
-                    
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={onClose} disabled={processing}>
-                            Batal
-                        </Button>
-                        <Button type="submit" disabled={processing}>
-                            {processing ? 'Menyimpan...' : 'Simpan'}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
+    return <Dialog open={isOpen} onOpenChange={onClose}><DialogContent><form onSubmit={submit}><DialogHeader><DialogTitle>{transaction ? 'Ubah Transaksi' : 'Catat Transaksi'}</DialogTitle></DialogHeader><div className="grid gap-3 py-4">
+        <Label>Kategori</Label><Select value={String(form.data.category_id)} onValueChange={(value) => form.setData('category_id', Number(value))}><SelectTrigger><SelectValue placeholder="Pilih kategori" /></SelectTrigger><SelectContent>{options(categories)}</SelectContent></Select>
+        <Label>Akun</Label><Select value={String(form.data.account_id)} onValueChange={(value) => form.setData('account_id', Number(value))}><SelectTrigger><SelectValue placeholder="Pilih akun" /></SelectTrigger><SelectContent>{options(accounts)}</SelectContent></Select>
+        {isTransfer && <><Label>Akun Tujuan</Label><Select value={String(form.data.transfer_account_id)} onValueChange={(value) => form.setData('transfer_account_id', Number(value))}><SelectTrigger><SelectValue placeholder="Pilih akun tujuan" /></SelectTrigger><SelectContent>{options(accounts)}</SelectContent></Select></>}
+        {needsContact && <><Label>Kontak</Label><Select value={String(form.data.contact_id)} onValueChange={(value) => form.setData('contact_id', Number(value))}><SelectTrigger><SelectValue placeholder="Pilih kontak" /></SelectTrigger><SelectContent>{options(contacts)}</SelectContent></Select><Label>Aksi</Label><Select value={form.data.action} onValueChange={(value) => form.setData('action', value)}><SelectTrigger><SelectValue placeholder="Pilih aksi" /></SelectTrigger><SelectContent>{(category?.type === 'debt' ? [['receive_loan', 'Menerima pinjaman'], ['repay_debt', 'Membayar utang']] : [['give_loan', 'Memberi pinjaman'], ['receive_repayment', 'Menerima pelunasan']]).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent></Select></>}
+        <Label>Jumlah</Label><Input type="number" min="0.01" step="0.01" value={form.data.amount} onChange={(event) => form.setData('amount', event.target.value)} />
+        <Label>Deskripsi</Label><Input value={form.data.description} onChange={(event) => form.setData('description', event.target.value)} />
+        <Label>Tanggal</Label><Input type="datetime-local" value={form.data.transaction_date} onChange={(event) => form.setData('transaction_date', event.target.value)} />
+    </div><DialogFooter><Button type="button" variant="outline" onClick={onClose}>Batal</Button><Button disabled={form.processing}>Simpan</Button></DialogFooter></form></DialogContent></Dialog>;
 }

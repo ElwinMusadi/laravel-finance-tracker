@@ -14,7 +14,7 @@ interface Contact {
     id: number;
     name: string;
     is_active: boolean;
-    accounts?: any[];
+    transactions_count: number;
 }
 
 interface Props {
@@ -90,7 +90,7 @@ export default function ContactsIndex({ contacts }: Props) {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                {contact.accounts?.length || 0} akun
+                                                {contact.transactions_count} transaksi
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
@@ -98,7 +98,7 @@ export default function ContactsIndex({ contacts }: Props) {
                                                         <IconEdit className="h-4 w-4 text-muted-foreground" />
                                                         <span className="sr-only">Ubah</span>
                                                     </Button>
-                                                    <Button variant="ghost" size="icon" onClick={() => handleDelete(contact)} disabled={contact.accounts && contact.accounts.length > 0}>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleDelete(contact)} disabled={contact.transactions_count > 0}>
                                                         <IconTrash className="h-4 w-4 text-destructive" />
                                                         <span className="sr-only">Hapus</span>
                                                     </Button>

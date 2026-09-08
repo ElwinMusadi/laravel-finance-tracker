@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CategoryType;
 use App\Http\Requests\StoreAccountRequest;
 use App\Http\Requests\UpdateAccountRequest;
 use App\Models\Account;
-use App\Models\Contact;
+use App\Models\AccountType;
+use App\Models\Category;
 use App\Models\Transaction;
 use App\Services\LedgerService;
 use Illuminate\Http\RedirectResponse;
@@ -17,78 +19,51 @@ class AccountController extends Controller
 {
     public function __construct(private LedgerService $ledger) {}
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(): Response
     {
-        $accounts = Account::with('contact')->orderBy('type')->orderBy('name')->get();
-
-        // Calculate balances dynamically for all accounts
-        $accountsWithBalances = $accounts->map(function (Account $account) {
+        $accounts = Account::with('accountType')->orderBy('name')->get()->each(function (Account $account): void {
             $account->balance = $this->ledger->getAccountBalance($account);
-
-            return $account;
         });
 
-        $contacts = Contact::active()->orderBy('name')->get();
-
-        return Inertia::render('accounts/index', [
-            'accounts' => $accountsWithBalances,
-            'contacts' => $contacts,
-        ]);
+        return Inertia::render('accounts/index', ['accounts' => $accounts]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreAccountRequest $request): RedirectResponse
     {
-        DB::transaction(function () use ($request) {
-            $account = Account::create($request->safe()->except('opening_balance'));
+        DB::transaction(function () use ($request): void {
+            $validated = $request->validated();
+            $accountType = $this->resolveAccountType($validated['account_type'] ?? null);
+            $account = Account::create([...$validated, 'account_type_id' => $accountType?->id]);
 
-            if ($account->type === 'asset' && $request->filled('opening_balance') && $request->input('opening_balance') > 0) {
-                // Find or create the default equity account for opening balances
-                $equity = Account::firstOrCreate(
-                    ['type' => 'equity', 'name' => 'Opening Balance'],
-                    ['is_active' => true]
-                );
-
-                Transaction::create([
-                    'transaction_date' => now(), // UTC
-                    'amount' => $request->input('opening_balance'),
-                    'description' => 'Opening Balance',
-                    'source_account_id' => $equity->id,
-                    'destination_account_id' => $account->id,
-                ]);
+            if ($request->filled('opening_balance') && (float) $validated['opening_balance'] > 0) {
+                $category = Category::firstOrCreate(['type' => CategoryType::OpeningBalance, 'name' => 'Saldo Awal'], ['is_active' => true]);
+                Transaction::create(['transaction_date' => now(), 'amount' => $validated['opening_balance'], 'description' => 'Saldo Awal', 'category_id' => $category->id, 'account_id' => $account->id]);
             }
         });
 
         return redirect()->route('accounts.index')->with('success', 'Akun berhasil dibuat.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateAccountRequest $request, Account $account): RedirectResponse
     {
-        $account->update($request->validated());
+        $validated = $request->validated();
+        $account->update([...$validated, 'account_type_id' => $this->resolveAccountType($validated['account_type'] ?? null)?->id]);
 
         return redirect()->route('accounts.index')->with('success', 'Akun berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Account $account): RedirectResponse
     {
-        if ($account->incomingTransactions()->exists() || $account->outgoingTransactions()->exists()) {
-            return redirect()->route('accounts.index')
-                ->with('error', 'Akun tidak dapat dihapus karena memiliki transaksi. Nonaktifkan akun tersebut.');
+        if ($account->transactions()->exists() || $account->transferTransactions()->exists()) {
+            return redirect()->route('accounts.index')->with('error', 'Akun tidak dapat dihapus karena memiliki transaksi. Nonaktifkan akun tersebut.');
         }
-
         $account->delete();
 
         return redirect()->route('accounts.index')->with('success', 'Akun berhasil dihapus.');
+    }
+
+    private function resolveAccountType(?string $name): ?AccountType
+    {
+        return blank($name) ? null : AccountType::firstOrCreate(['name' => $name]);
     }
 }

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Account;
+use App\Models\AccountType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,62 +20,11 @@ class AccountFactory extends Factory
     {
         return [
             'name' => fake()->word(),
-            'type' => 'asset',
-            'contact_id' => null,
+            'account_type_id' => AccountType::factory(),
             'icon' => null,
             'color' => null,
             'is_active' => true,
         ];
-    }
-
-    /**
-     * Create an asset account (bank, cash, e-wallet).
-     */
-    public function asset(): static
-    {
-        return $this->state(fn (array $attributes): array => [
-            'type' => 'asset',
-        ]);
-    }
-
-    /**
-     * Create a liability account (debt).
-     */
-    public function liability(): static
-    {
-        return $this->state(fn (array $attributes): array => [
-            'type' => 'liability',
-        ]);
-    }
-
-    /**
-     * Create an equity account (opening balance).
-     */
-    public function equity(): static
-    {
-        return $this->state(fn (array $attributes): array => [
-            'type' => 'equity',
-        ]);
-    }
-
-    /**
-     * Create a revenue account (income category).
-     */
-    public function revenue(): static
-    {
-        return $this->state(fn (array $attributes): array => [
-            'type' => 'revenue',
-        ]);
-    }
-
-    /**
-     * Create an expense account (expense category).
-     */
-    public function expense(): static
-    {
-        return $this->state(fn (array $attributes): array => [
-            'type' => 'expense',
-        ]);
     }
 
     /**

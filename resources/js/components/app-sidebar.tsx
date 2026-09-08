@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { IconDashboard, IconListDetails, IconChartBar, IconFolder, IconUsers, IconCamera, IconFileDescription, IconFileAi, IconSettings, IconHelp, IconSearch, IconDatabase, IconReport, IconFileWord, IconInnerShadowTop } from "@tabler/icons-react"
+import { IconDashboard, IconListDetails, IconChartBar, IconTags, IconFolder, IconUsers, IconCamera, IconFileDescription, IconFileAi, IconSettings, IconHelp, IconSearch, IconDatabase, IconReport, IconFileWord, IconInnerShadowTop } from "@tabler/icons-react"
 
 const data = {
   user: {
@@ -39,8 +39,15 @@ const data = {
       ),
     },
     {
-      title: "Kontak",
-      url: "/contacts",
+      title: "Kategori",
+      url: "/categories",
+      icon: (
+        <IconTags
+        />
+      ),
+    },
+    {
+      title: "Kontak",      url: "/contacts",
       icon: (
         <IconUsers
         />

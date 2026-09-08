@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Account;
-use App\Models\Budget;
+use App\Enums\CategoryType;
+use App\Models\Category;
 use App\Models\Transaction;
 use App\Services\LedgerService;
 use Illuminate\Http\Request;
@@ -20,20 +20,10 @@ class DashboardController extends Controller
         $startOfMonth = $now->copy()->startOfMonth();
         $endOfMonth = $now->copy()->endOfMonth();
 
-        // Total Assets
-        $assetAccounts = Account::ofType('asset')->get();
-        $totalAssets = $assetAccounts->reduce(function ($carry, $account) {
-            return bcadd((string) $carry, $this->ledger->getAccountBalance($account), 2);
-        }, '0.00');
-
-        // Total Liabilities
-        $liabilityAccounts = Account::ofType('liability')->get();
-        $totalLiabilities = $liabilityAccounts->reduce(function ($carry, $account) {
-            return bcadd((string) $carry, $this->ledger->getAccountBalance($account), 2);
-        }, '0.00');
-
-        // Net Worth
-        $netWorth = bcsub((string) $totalAssets, (string) $totalLiabilities, 2);
+        $totalAccounts = $this->ledger->getTotalAccountBalance();
+        $totalReceivables = $this->ledger->getTotalReceivable();
+        $totalDebts = $this->ledger->getTotalDebt();
+        $netWorth = bcsub(bcadd($totalAccounts, $totalReceivables, 2), $totalDebts, 2);
 
         // Monthly Income
         $monthlyIncome = $this->ledger->getTotalIncome($startOfMonth, $endOfMonth);
@@ -41,15 +31,14 @@ class DashboardController extends Controller
         // Monthly Expense
         $monthlyExpense = $this->ledger->getTotalExpenses($startOfMonth, $endOfMonth);
 
-        // Total Budget
-        $totalBudget = Budget::whereBetween('period_month', [$startOfMonth, $endOfMonth])->sum('amount');
+        $totalBudget = Category::query()->where('type', CategoryType::Expense)->sum('budget_limit');
 
         $budgetUsedPercentage = $totalBudget > 0
             ? min((floatval($monthlyExpense) / floatval($totalBudget)) * 100, 100)
             : 0;
 
         // Recent Transactions
-        $recentTransactions = Transaction::with(['sourceAccount', 'destinationAccount'])
+        $recentTransactions = Transaction::with(['account', 'transferAccount', 'category', 'contact'])
             ->latest('transaction_date')
             ->latest('id')
             ->take(5)
@@ -57,8 +46,11 @@ class DashboardController extends Controller
 
         return Inertia::render('dashboard', [
             'metrics' => [
-                'totalAssets' => $totalAssets,
-                'totalLiabilities' => $totalLiabilities,
+                'totalAccounts' => $totalAccounts,
+                'totalReceivables' => $totalReceivables,
+                'totalDebts' => $totalDebts,
+                'totalAssets' => $totalAccounts,
+                'totalLiabilities' => $totalDebts,
                 'netWorth' => $netWorth,
                 'monthlyIncome' => $monthlyIncome,
                 'monthlyExpense' => $monthlyExpense,
