@@ -30,7 +30,7 @@ class ContactController extends Controller
     {
         Contact::create($request->validated());
 
-        return redirect()->route('contacts.index')->with('success', 'Contact created successfully.');
+        return redirect()->route('contacts.index')->with('success', 'Kontak berhasil dibuat.');
     }
 
     /**
@@ -40,7 +40,7 @@ class ContactController extends Controller
     {
         $contact->update($request->validated());
 
-        return redirect()->route('contacts.index')->with('success', 'Contact updated successfully.');
+        return redirect()->route('contacts.index')->with('success', 'Kontak berhasil diperbarui.');
     }
 
     /**
@@ -50,11 +50,11 @@ class ContactController extends Controller
     {
         if ($contact->accounts()->exists()) {
             return redirect()->route('contacts.index')
-                ->with('error', 'Cannot delete contact because it has linked accounts. Deactivate it instead.');
+                ->with('error', 'Kontak tidak dapat dihapus karena memiliki akun yang terhubung. Nonaktifkan kontak tersebut.');
         }
 
         $contact->delete();
 
-        return redirect()->route('contacts.index')->with('success', 'Contact deleted successfully.');
+        return redirect()->route('contacts.index')->with('success', 'Kontak berhasil dihapus.');
     }
 }

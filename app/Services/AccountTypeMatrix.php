@@ -57,6 +57,6 @@ class AccountTypeMatrix
      */
     public function getErrorMessage(string $sourceType, string $destinationType): string
     {
-        return "Invalid transaction: cannot move funds from {$sourceType} account to {$destinationType} account.";
+        return "Transaksi tidak valid: tidak dapat memindahkan dana dari akun {$sourceType} ke akun {$destinationType}.";
     }
 }

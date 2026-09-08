@@ -64,7 +64,7 @@ class AccountController extends Controller
             }
         });
 
-        return redirect()->route('accounts.index')->with('success', 'Account created successfully.');
+        return redirect()->route('accounts.index')->with('success', 'Akun berhasil dibuat.');
     }
 
     /**
@@ -74,7 +74,7 @@ class AccountController extends Controller
     {
         $account->update($request->validated());
 
-        return redirect()->route('accounts.index')->with('success', 'Account updated successfully.');
+        return redirect()->route('accounts.index')->with('success', 'Akun berhasil diperbarui.');
     }
 
     /**
@@ -84,11 +84,11 @@ class AccountController extends Controller
     {
         if ($account->incomingTransactions()->exists() || $account->outgoingTransactions()->exists()) {
             return redirect()->route('accounts.index')
-                ->with('error', 'Cannot delete account with existing transactions. Deactivate it instead.');
+                ->with('error', 'Akun tidak dapat dihapus karena memiliki transaksi. Nonaktifkan akun tersebut.');
         }
 
         $account->delete();
 
-        return redirect()->route('accounts.index')->with('success', 'Account deleted successfully.');
+        return redirect()->route('accounts.index')->with('success', 'Akun berhasil dihapus.');
     }
 }

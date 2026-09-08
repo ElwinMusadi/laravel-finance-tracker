@@ -61,22 +61,22 @@ export function ContactFormModal({ isOpen, onClose, contact }: Props) {
             <DialogContent className="sm:max-w-[425px]">
                 <form onSubmit={submit}>
                     <DialogHeader>
-                        <DialogTitle>{isEditing ? 'Edit Contact' : 'Add Contact'}</DialogTitle>
+                        <DialogTitle>{isEditing ? 'Ubah Kontak' : 'Tambah Kontak'}</DialogTitle>
                         <DialogDescription>
                             {isEditing 
-                                ? 'Update the details for this contact.' 
-                                : 'Create a new contact for debt or receivable tracking.'}
+                                ? 'Perbarui detail untuk kontak ini.'
+                                : 'Buat kontak baru untuk pelacakan hutang atau piutang.'}
                         </DialogDescription>
                     </DialogHeader>
                     
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
+                            <Label htmlFor="name">Nama</Label>
                             <Input
                                 id="name"
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
-                                placeholder="e.g. John Doe, Bank Loans Inc."
+                                placeholder="cth. Budi Santoso, PT. Bank Maju"
                             />
                             {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                         </div>
@@ -88,17 +88,17 @@ export function ContactFormModal({ isOpen, onClose, contact }: Props) {
                                 onCheckedChange={(checked) => setData('is_active', checked as boolean)}
                             />
                             <Label htmlFor="is_active" className="font-normal cursor-pointer">
-                                Active (can be used for new accounts)
+                                Aktif (dapat digunakan untuk akun baru)
                             </Label>
                         </div>
                     </div>
                     
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={onClose} disabled={processing}>
-                            Cancel
+                            Batal
                         </Button>
                         <Button type="submit" disabled={processing}>
-                            {processing ? 'Saving...' : 'Save'}
+                            {processing ? 'Menyimpan...' : 'Simpan'}
                         </Button>
                     </DialogFooter>
                 </form>

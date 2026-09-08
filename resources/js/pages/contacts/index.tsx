@@ -23,7 +23,7 @@ interface Props {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Contacts',
+        title: 'Kontak',
         href: '/contacts',
     },
 ];
@@ -33,49 +33,49 @@ export default function ContactsIndex({ contacts }: Props) {
     const [editingContact, setEditingContact] = useState<Contact | null>(null);
 
     const handleDelete = (contact: Contact) => {
-        if (confirm(`Are you sure you want to delete ${contact.name}?`)) {
+        if (confirm(`Apakah Anda yakin ingin menghapus ${contact.name}?`)) {
             router.delete(destroy.url(contact.id));
         }
     };
 
     return (
         <>
-            <Head title="Contacts" />
+            <Head title="Kontak" />
             
             <div className="flex h-full flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">Contacts</h1>
+                        <h1 className="text-2xl font-semibold tracking-tight">Kontak</h1>
                         <p className="text-sm text-muted-foreground">
-                            Manage people or organizations you lend money to or borrow from.
+                            Kelola orang atau organisasi yang Anda pinjami atau pinjam dari mereka.
                         </p>
                     </div>
                     <Button onClick={() => setIsCreateModalOpen(true)}>
                         <IconPlus className="mr-2 h-4 w-4" />
-                        Add Contact
+                        Tambah Kontak
                     </Button>
                 </div>
 
                 <Card>
                     <CardHeader className="sr-only">
-                        <CardTitle>Contacts List</CardTitle>
-                        <CardDescription>All registered contacts.</CardDescription>
+                        <CardTitle>Daftar Kontak</CardTitle>
+                        <CardDescription>Semua kontak terdaftar.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
+                                    <TableHead>Nama</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead>Linked Accounts</TableHead>
-                                    <TableHead className="w-[100px] text-right">Actions</TableHead>
+                                    <TableHead>Akun Terhubung</TableHead>
+                                    <TableHead className="w-[100px] text-right">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {contacts.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                                            No contacts found.
+                                            Belum ada kontak.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -84,23 +84,23 @@ export default function ContactsIndex({ contacts }: Props) {
                                             <TableCell className="font-medium">{contact.name}</TableCell>
                                             <TableCell>
                                                 {contact.is_active ? (
-                                                    <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">Active</Badge>
+                                                    <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">Aktif</Badge>
                                                 ) : (
-                                                    <Badge variant="secondary">Inactive</Badge>
+                                                    <Badge variant="secondary">Nonaktif</Badge>
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                {contact.accounts?.length || 0} account(s)
+                                                {contact.accounts?.length || 0} akun
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="ghost" size="icon" onClick={() => setEditingContact(contact)}>
                                                         <IconEdit className="h-4 w-4 text-muted-foreground" />
-                                                        <span className="sr-only">Edit</span>
+                                                        <span className="sr-only">Ubah</span>
                                                     </Button>
                                                     <Button variant="ghost" size="icon" onClick={() => handleDelete(contact)} disabled={contact.accounts && contact.accounts.length > 0}>
                                                         <IconTrash className="h-4 w-4 text-destructive" />
-                                                        <span className="sr-only">Delete</span>
+                                                        <span className="sr-only">Hapus</span>
                                                     </Button>
                                                 </div>
                                             </TableCell>

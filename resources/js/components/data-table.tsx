@@ -138,7 +138,7 @@ function DragHandle({ id }: { id: number }) {
       className="size-7 text-muted-foreground hover:bg-transparent"
     >
       <IconGripVertical className="size-3 text-muted-foreground" />
-      <span className="sr-only">Drag to reorder</span>
+      <span className="sr-only">Seret untuk mengurutkan ulang</span>
     </Button>
   )
 }
@@ -159,7 +159,7 @@ const columns = columnHelper.columns([
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
+          aria-label="Pilih semua"
         />
       </div>
     ),
@@ -168,7 +168,7 @@ const columns = columnHelper.columns([
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label="Pilih baris"
         />
       </div>
     ),
@@ -176,14 +176,14 @@ const columns = columnHelper.columns([
     enableHiding: false,
   }),
   columnHelper.accessor("header", {
-    header: "Header",
+    header: "Judul",
     cell: ({ row }) => {
       return <TableCellViewer item={row.original} />
     },
     enableHiding: false,
   }),
   columnHelper.accessor("type", {
-    header: "Section Type",
+    header: "Tipe Bagian",
     cell: ({ row }) => (
       <div className="w-32">
         <Badge variant="outline" className="px-1.5 text-muted-foreground">
@@ -207,7 +207,7 @@ const columns = columnHelper.columns([
     ),
   }),
   columnHelper.accessor("target", {
-    header: () => <div className="w-full text-right">Target</div>,
+    header: () => <div className="w-full text-right">Sasaran</div>,
     cell: ({ row }) => (
       <form
         onSubmit={(e) => {
@@ -231,7 +231,7 @@ const columns = columnHelper.columns([
     ),
   }),
   columnHelper.accessor("limit", {
-    header: () => <div className="w-full text-right">Limit</div>,
+    header: () => <div className="w-full text-right">Batas</div>,
     cell: ({ row }) => (
       <form
         onSubmit={(e) => {
@@ -255,7 +255,7 @@ const columns = columnHelper.columns([
     ),
   }),
   columnHelper.accessor("reviewer", {
-    header: "Reviewer",
+    header: "Peninjau",
     cell: ({ row }) => {
       const isAssigned = row.original.reviewer !== "Assign reviewer"
 
@@ -274,7 +274,7 @@ const columns = columnHelper.columns([
               size="sm"
               id={`${row.original.id}-reviewer`}
             >
-              <SelectValue placeholder="Assign reviewer" />
+              <SelectValue placeholder="Tugaskan peninjau" />
             </SelectTrigger>
             <SelectContent align="end">
               <SelectGroup>
@@ -301,15 +301,15 @@ const columns = columnHelper.columns([
           >
             <IconDotsVertical
             />
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">Buka menu</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
+          <DropdownMenuItem>Ubah</DropdownMenuItem>
+          <DropdownMenuItem>Buat salinan</DropdownMenuItem>
+          <DropdownMenuItem>Favorit</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+          <DropdownMenuItem variant="destructive">Hapus</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
@@ -420,7 +420,7 @@ export function DataTable({
             size="sm"
             id="view-selector"
           >
-            <SelectValue placeholder="Select a view" />
+            <SelectValue placeholder="Pilih tampilan" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -432,14 +432,14 @@ export function DataTable({
           </SelectContent>
         </Select>
         <TabsList className="hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
+          <TabsTrigger value="outline">Kerangka</TabsTrigger>
           <TabsTrigger value="past-performance">
-            Past Performance <Badge variant="secondary">3</Badge>
+            Kinerja Sebelumnya <Badge variant="secondary">3</Badge>
           </TabsTrigger>
           <TabsTrigger value="key-personnel">
-            Key Personnel <Badge variant="secondary">2</Badge>
+            Personel Utama <Badge variant="secondary">2</Badge>
           </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
+          <TabsTrigger value="focus-documents">Dokumen Fokus</TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -477,7 +477,7 @@ export function DataTable({
           <Button variant="outline" size="sm">
             <IconPlus
             />
-            <span className="hidden lg:inline">Add Section</span>
+            <span className="hidden lg:inline">Tambah Bagian</span>
           </Button>
         </div>
       </div>
@@ -574,7 +574,7 @@ export function DataTable({
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
               >
-                <span className="sr-only">Go to first page</span>
+                <span className="sr-only">Ke halaman pertama</span>
                 <IconChevronsLeft
                 />
               </Button>
@@ -585,7 +585,7 @@ export function DataTable({
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
               >
-                <span className="sr-only">Go to previous page</span>
+                <span className="sr-only">Ke halaman sebelumnya</span>
                 <IconChevronLeft
                 />
               </Button>
@@ -596,7 +596,7 @@ export function DataTable({
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
               >
-                <span className="sr-only">Go to next page</span>
+                <span className="sr-only">Ke halaman berikutnya</span>
                 <IconChevronRight
                 />
               </Button>
@@ -607,7 +607,7 @@ export function DataTable({
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
               >
-                <span className="sr-only">Go to last page</span>
+                <span className="sr-only">Ke halaman terakhir</span>
                 <IconChevronsRight
                 />
               </Button>
@@ -731,15 +731,15 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           )}
           <form className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
-              <Label htmlFor="header">Header</Label>
+              <Label htmlFor="header">Judul</Label>
               <Input id="header" defaultValue={item.header} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type">Tipe</Label>
                 <Select defaultValue={item.type}>
                   <SelectTrigger id="type" className="w-full">
-                    <SelectValue placeholder="Select a type" />
+                    <SelectValue placeholder="Pilih tipe" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
@@ -767,7 +767,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                 <Label htmlFor="status">Status</Label>
                 <Select defaultValue={item.status}>
                   <SelectTrigger id="status" className="w-full">
-                    <SelectValue placeholder="Select a status" />
+                    <SelectValue placeholder="Pilih status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
@@ -781,19 +781,19 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="target">Target</Label>
+                <Label htmlFor="target">Sasaran</Label>
                 <Input id="target" defaultValue={item.target} />
               </div>
               <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Limit</Label>
+                <Label htmlFor="limit">Batas</Label>
                 <Input id="limit" defaultValue={item.limit} />
               </div>
             </div>
             <div className="flex flex-col gap-3">
-              <Label htmlFor="reviewer">Reviewer</Label>
+              <Label htmlFor="reviewer">Peninjau</Label>
               <Select defaultValue={item.reviewer}>
                 <SelectTrigger id="reviewer" className="w-full">
-                  <SelectValue placeholder="Select a reviewer" />
+                  <SelectValue placeholder="Pilih peninjau" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -809,9 +809,9 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </form>
         </div>
         <DrawerFooter>
-          <Button>Submit</Button>
+          <Button>Kirim</Button>
           <DrawerClose asChild>
-            <Button variant="outline">Done</Button>
+            <Button variant="outline">Selesai</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

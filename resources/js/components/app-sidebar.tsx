@@ -23,7 +23,7 @@ const data = {
   },
   navMain: [
     {
-      title: "Dashboard",
+      title: "Dasbor",
       url: "/dashboard",
       icon: (
         <IconDashboard
@@ -31,7 +31,7 @@ const data = {
       ),
     },
     {
-      title: "Accounts",
+      title: "Akun",
       url: "/accounts",
       icon: (
         <IconListDetails
@@ -39,7 +39,7 @@ const data = {
       ),
     },
     {
-      title: "Contacts",
+      title: "Kontak",
       url: "/contacts",
       icon: (
         <IconUsers
@@ -47,7 +47,7 @@ const data = {
       ),
     },
     {
-      title: "Transactions",
+      title: "Transaksi",
       url: "/transactions",
       icon: (
         <IconChartBar
@@ -55,7 +55,7 @@ const data = {
       ),
     },
     {
-      title: "Budgets",
+      title: "Budget",
       url: "/budgets",
       icon: (
         <IconFolder
@@ -122,7 +122,7 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "Settings",
+      title: "Pengaturan",
       url: "#",
       icon: (
         <IconSettings
@@ -130,7 +130,7 @@ const data = {
       ),
     },
     {
-      title: "Get Help",
+      title: "Bantuan",
       url: "#",
       icon: (
         <IconHelp
@@ -138,7 +138,7 @@ const data = {
       ),
     },
     {
-      title: "Search",
+      title: "Cari",
       url: "#",
       icon: (
         <IconSearch
@@ -148,7 +148,7 @@ const data = {
   ],
   documents: [
     {
-      name: "Data Library",
+      name: "Pustaka Data",
       url: "#",
       icon: (
         <IconDatabase
@@ -156,7 +156,7 @@ const data = {
       ),
     },
     {
-      name: "Reports",
+      name: "Laporan",
       url: "#",
       icon: (
         <IconReport
@@ -164,7 +164,7 @@ const data = {
       ),
     },
     {
-      name: "Word Assistant",
+      name: "Asisten Word",
       url: "#",
       icon: (
         <IconFileWord

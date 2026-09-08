@@ -57,7 +57,7 @@ class TransactionController extends Controller
     {
         Transaction::create($request->validated());
 
-        return redirect()->back()->with('success', 'Transaction recorded successfully.');
+        return redirect()->back()->with('success', 'Transaksi berhasil dicatat.');
     }
 
     /**
@@ -67,7 +67,7 @@ class TransactionController extends Controller
     {
         $transaction->update($request->validated());
 
-        return redirect()->back()->with('success', 'Transaction updated successfully.');
+        return redirect()->back()->with('success', 'Transaksi berhasil diperbarui.');
     }
 
     /**
@@ -77,6 +77,6 @@ class TransactionController extends Controller
     {
         $transaction->delete();
 
-        return redirect()->back()->with('success', 'Transaction deleted successfully.');
+        return redirect()->back()->with('success', 'Transaksi berhasil dihapus.');
     }
 }

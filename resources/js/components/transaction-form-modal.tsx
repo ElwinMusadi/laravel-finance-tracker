@@ -127,17 +127,17 @@ export function TransactionFormModal({ isOpen, onClose, transaction, accounts }:
             <DialogContent className="sm:max-w-[500px]">
                 <form onSubmit={submit}>
                     <DialogHeader>
-                        <DialogTitle>{isEditing ? 'Edit Transaction' : 'Record Transaction'}</DialogTitle>
+                        <DialogTitle>{isEditing ? 'Ubah Transaksi' : 'Catat Transaksi'}</DialogTitle>
                         <DialogDescription>
                             {isEditing 
-                                ? 'Update the details of this ledger entry.' 
-                                : 'Record a new financial transaction between two accounts.'}
+                                ? 'Perbarui detail entri buku besar ini.'
+                                : 'Catat transaksi keuangan baru antara dua akun.'}
                         </DialogDescription>
                     </DialogHeader>
                     
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="transaction_date">Date & Time</Label>
+                            <Label htmlFor="transaction_date">Tanggal &amp; Waktu</Label>
                             <Input
                                 id="transaction_date"
                                 type="datetime-local"
@@ -150,13 +150,13 @@ export function TransactionFormModal({ isOpen, onClose, transaction, accounts }:
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="source_account_id">Source (From)</Label>
+                                <Label htmlFor="source_account_id">Sumber (Dari)</Label>
                                 <Select 
                                     value={String(data.source_account_id)} 
                                     onValueChange={(val) => setData('source_account_id', Number(val))}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select source account" />
+                                        <SelectValue placeholder="Pilih akun sumber" />
                                     </SelectTrigger>
                                     <SelectContent className="max-h-[300px]">
                                         {renderAccountOptions()}
@@ -166,13 +166,13 @@ export function TransactionFormModal({ isOpen, onClose, transaction, accounts }:
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="destination_account_id">Destination (To)</Label>
+                                <Label htmlFor="destination_account_id">Tujuan (Ke)</Label>
                                 <Select 
                                     value={String(data.destination_account_id)} 
                                     onValueChange={(val) => setData('destination_account_id', Number(val))}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select destination account" />
+                                        <SelectValue placeholder="Pilih akun tujuan" />
                                     </SelectTrigger>
                                     <SelectContent className="max-h-[300px]">
                                         {renderAccountOptions()}
@@ -183,7 +183,7 @@ export function TransactionFormModal({ isOpen, onClose, transaction, accounts }:
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="amount">Amount (IDR)</Label>
+                            <Label htmlFor="amount">Jumlah (IDR)</Label>
                             <Input
                                 id="amount"
                                 type="number"
@@ -198,24 +198,24 @@ export function TransactionFormModal({ isOpen, onClose, transaction, accounts }:
                         </div>
                         
                         <div className="grid gap-2">
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="description">Deskripsi</Label>
                             <Input
                                 id="description"
                                 value={data.description}
                                 onChange={(e) => setData('description', e.target.value)}
-                                placeholder="e.g. Monthly Salary, Groceries, Rent"
+                                placeholder="cth. Gaji Bulanan, Belanja, Sewa"
                                 required
                             />
                             {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="notes">Notes (Optional)</Label>
+                            <Label htmlFor="notes">Catatan (Opsional)</Label>
                             <Input
                                 id="notes"
                                 value={data.notes}
                                 onChange={(e) => setData('notes', e.target.value)}
-                                placeholder="Any additional details"
+                                placeholder="Detail tambahan"
                             />
                             {errors.notes && <p className="text-sm text-destructive">{errors.notes}</p>}
                         </div>
@@ -223,10 +223,10 @@ export function TransactionFormModal({ isOpen, onClose, transaction, accounts }:
                     
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={onClose} disabled={processing}>
-                            Cancel
+                            Batal
                         </Button>
                         <Button type="submit" disabled={processing}>
-                            {processing ? 'Saving...' : 'Save'}
+                            {processing ? 'Menyimpan...' : 'Simpan'}
                         </Button>
                     </DialogFooter>
                 </form>

@@ -79,7 +79,7 @@ export function NavUser({
               <DropdownMenuItem asChild>
                 <Link href="/settings/profile" className="flex w-full cursor-pointer items-center">
                   <IconUserCircle className="mr-2 size-4" />
-                  Account Settings
+                  Pengaturan Akun
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -92,7 +92,7 @@ export function NavUser({
                 className="flex w-full cursor-pointer items-center text-destructive focus:text-destructive"
               >
                 <IconLogout className="mr-2 size-4" />
-                Log out
+                Logout
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

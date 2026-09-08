@@ -4,6 +4,7 @@ use App\Models\Account;
 use App\Models\Contact;
 use App\Models\Transaction;
 use App\Models\User;
+
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
@@ -62,10 +63,10 @@ test('store creates account and opening balance transaction', function () {
         'name' => 'Cash',
         'type' => 'asset',
     ]);
-    
+
     $account = Account::where('name', 'Cash')->first();
     $equityAccount = Account::where('type', 'equity')->where('name', 'Opening Balance')->first();
-    
+
     assertDatabaseHas('transactions', [
         'description' => 'Opening Balance',
         'amount' => 1000000,
@@ -95,7 +96,7 @@ test('destroy deletes account if balance is zero', function () {
     $account = Account::factory()->create();
 
     $response = delete(route('accounts.destroy', $account));
-    
+
     $response->assertRedirect(route('accounts.index'));
     assertDatabaseMissing('accounts', [
         'id' => $account->id,
@@ -105,7 +106,7 @@ test('destroy deletes account if balance is zero', function () {
 test('destroy prevents deletion if account has non-zero balance', function () {
     $account = Account::factory()->create();
     $equity = Account::factory()->create(['type' => 'equity']);
-    
+
     Transaction::factory()->create([
         'source_account_id' => $equity->id,
         'destination_account_id' => $account->id,
@@ -113,10 +114,10 @@ test('destroy prevents deletion if account has non-zero balance', function () {
     ]);
 
     $response = delete(route('accounts.destroy', $account));
-    
+
     $response->assertRedirect(route('accounts.index'));
-    $response->assertSessionHas('error', 'Cannot delete account with existing transactions. Deactivate it instead.');
-    
+    $response->assertSessionHas('error', 'Akun tidak dapat dihapus karena memiliki transaksi. Nonaktifkan akun tersebut.');
+
     assertDatabaseHas('accounts', [
         'id' => $account->id,
     ]);

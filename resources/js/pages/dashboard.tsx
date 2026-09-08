@@ -42,7 +42,7 @@ interface Props {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Dasbor',
         href: '/dashboard',
     },
 ];
@@ -70,13 +70,13 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
 
     return (
         <>
-            <Head title="Dashboard" />
+            <Head title="Dasbor" />
             
             <div className="flex h-full flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6 max-w-7xl mx-auto w-full">
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight">Ringkasan</h1>
                     <p className="text-sm text-muted-foreground">
-                        Your financial summary for {currentMonth}.
+                        Ringkasan keuangan Anda untuk {currentMonth}.
                     </p>
                 </div>
 
@@ -85,7 +85,7 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                     {/* Net Worth */}
                     <Card className="@container/card">
                         <CardHeader>
-                            <CardDescription>Net Worth</CardDescription>
+                            <CardDescription>Kekayaan Bersih</CardDescription>
                             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                 {formatCurrency(metrics.netWorth)}
                             </CardTitle>
@@ -97,21 +97,21 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                             </CardAction>
                         </CardHeader>
                         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                            <div className="text-muted-foreground">Assets minus Liabilities</div>
+                            <div className="text-muted-foreground">Aset dikurangi Liabilitas</div>
                         </CardFooter>
                     </Card>
                     
                     {/* Assets vs Liabilities */}
                     <Card className="@container/card">
                         <CardHeader>
-                            <CardDescription>Total Assets</CardDescription>
+                            <CardDescription>Total Aset</CardDescription>
                             <CardTitle className="text-2xl font-semibold tabular-nums text-emerald-600 @[250px]/card:text-3xl">
                                 {formatCurrency(metrics.totalAssets)}
                             </CardTitle>
                         </CardHeader>
                         <CardFooter className="flex-col items-start gap-1.5 text-sm pt-0">
                             <div className="flex justify-between w-full">
-                                <span className="text-muted-foreground">Liabilities:</span>
+                                <span className="text-muted-foreground">Liabilitas:</span>
                                 <span className="font-medium text-destructive">{formatCurrency(metrics.totalLiabilities)}</span>
                             </div>
                         </CardFooter>
@@ -120,7 +120,7 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                     {/* Monthly Income */}
                     <Card className="@container/card">
                         <CardHeader>
-                            <CardDescription>Monthly Income</CardDescription>
+                            <CardDescription>Pemasukan Bulan Ini</CardDescription>
                             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                 {formatCurrency(metrics.monthlyIncome)}
                             </CardTitle>
@@ -133,7 +133,7 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                     {/* Monthly Expense & Budget */}
                     <Card className="@container/card">
                         <CardHeader>
-                            <CardDescription>Monthly Expense</CardDescription>
+                            <CardDescription>Pengeluaran Bulan Ini</CardDescription>
                             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                 {formatCurrency(metrics.monthlyExpense)}
                             </CardTitle>
@@ -157,7 +157,7 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                     {/* Recent Transactions */}
                     <Card className="lg:col-span-2">
                         <CardHeader>
-                            <CardTitle>Recent Transactions</CardTitle>
+                            <CardTitle>Transaksi Terbaru</CardTitle>
                             <CardDescription>Your latest financial movements.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -174,7 +174,7 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                                     {recentTransactions.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={4} className="text-center text-muted-foreground h-24">
-                                                No recent transactions.
+                                                Belum ada transaksi.
                                             </TableCell>
                                         </TableRow>
                                     ) : (
@@ -200,7 +200,7 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                         </CardContent>
                         <CardFooter className="border-t pt-4">
                             <Link href="/transactions" className="text-sm text-primary hover:underline font-medium w-full text-center">
-                                View All Transactions
+                                Lihat Semua Transaksi
                             </Link>
                         </CardFooter>
                     </Card>
@@ -208,8 +208,8 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                     {/* Quick Links / Actions */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Quick Actions</CardTitle>
-                            <CardDescription>Navigate to frequently used features.</CardDescription>
+                            <CardTitle>Akses Cepat</CardTitle>
+                            <CardDescription>Navigasi ke fitur yang sering digunakan.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid gap-2">
                             <Link href="/transactions" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors border">
@@ -217,8 +217,8 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                                     <IconReceipt className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <div className="font-medium text-sm">Record Transaction</div>
-                                    <div className="text-xs text-muted-foreground">Add income or expense</div>
+                                    <div className="font-medium text-sm">Catat Transaksi</div>
+                                    <div className="text-xs text-muted-foreground">Tambah pemasukan atau pengeluaran</div>
                                 </div>
                             </Link>
                             <Link href="/accounts" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors border">
@@ -226,8 +226,8 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                                     <IconWallet className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <div className="font-medium text-sm">Manage Accounts</div>
-                                    <div className="text-xs text-muted-foreground">Update balances or add new</div>
+                                    <div className="font-medium text-sm">Kelola Akun</div>
+                                    <div className="text-xs text-muted-foreground">Perbarui saldo atau tambah akun baru</div>
                                 </div>
                             </Link>
                             <Link href="/budgets" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors border">
@@ -235,8 +235,8 @@ export default function Dashboard({ metrics, recentTransactions, currentMonth }:
                                     <IconChartPie className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <div className="font-medium text-sm">View Budgets</div>
-                                    <div className="text-xs text-muted-foreground">Check spending limits</div>
+                                    <div className="font-medium text-sm">Lihat Budget</div>
+                                    <div className="text-xs text-muted-foreground">Periksa batas pengeluaran</div>
                                 </div>
                             </Link>
                         </CardContent>

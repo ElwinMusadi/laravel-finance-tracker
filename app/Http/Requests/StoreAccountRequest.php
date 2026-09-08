@@ -60,7 +60,7 @@ class StoreAccountRequest extends FormRequest
                 if ($exists) {
                     $validator->errors()->add(
                         'contact_id',
-                        'This contact already has an account of this type.'
+                        'Kontak ini sudah memiliki akun dengan tipe yang sama.'
                     );
                 }
             }

@@ -73,7 +73,7 @@ export function BudgetFormModal({ isOpen, onClose, budget, account, periodMonth 
         if (!yyyyMm) return '';
         const [year, month] = yyyyMm.split('-');
         const date = new Date(Number(year), Number(month) - 1);
-        return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
     };
 
     return (
@@ -81,15 +81,15 @@ export function BudgetFormModal({ isOpen, onClose, budget, account, periodMonth 
             <DialogContent className="sm:max-w-[425px]">
                 <form onSubmit={submit}>
                     <DialogHeader>
-                        <DialogTitle>{isEditing ? 'Update Budget' : 'Set Budget'}</DialogTitle>
+                        <DialogTitle>{isEditing ? 'Perbarui Budget' : 'Tetapkan Budget'}</DialogTitle>
                         <DialogDescription>
-                            Set the maximum spending limit for <strong>{account.name}</strong> in {formatMonth(periodMonth)}.
+                            Tetapkan batas pengeluaran maksimum untuk <strong>{account.name}</strong> pada {formatMonth(periodMonth)}.
                         </DialogDescription>
                     </DialogHeader>
                     
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="amount">Budget Amount (IDR)</Label>
+                            <Label htmlFor="amount">Jumlah Budget (IDR)</Label>
                             <Input
                                 id="amount"
                                 type="number"
@@ -109,10 +109,10 @@ export function BudgetFormModal({ isOpen, onClose, budget, account, periodMonth 
                     
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={onClose} disabled={processing}>
-                            Cancel
+                            Batal
                         </Button>
                         <Button type="submit" disabled={processing}>
-                            {processing ? 'Saving...' : 'Save'}
+                            {processing ? 'Menyimpan...' : 'Simpan'}
                         </Button>
                     </DialogFooter>
                 </form>

@@ -64,7 +64,7 @@ class BudgetController extends Controller
     {
         Budget::create($request->validated());
 
-        return redirect()->back()->with('success', 'Budget set successfully.');
+        return redirect()->back()->with('success', 'Budget berhasil ditetapkan.');
     }
 
     /**
@@ -74,7 +74,7 @@ class BudgetController extends Controller
     {
         $budget->update($request->validated());
 
-        return redirect()->back()->with('success', 'Budget updated successfully.');
+        return redirect()->back()->with('success', 'Budget berhasil diperbarui.');
     }
 
     /**
@@ -84,6 +84,6 @@ class BudgetController extends Controller
     {
         $budget->delete();
 
-        return redirect()->back()->with('success', 'Budget removed successfully.');
+        return redirect()->back()->with('success', 'Budget berhasil dihapus.');
     }
 }

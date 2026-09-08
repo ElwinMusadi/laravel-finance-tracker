@@ -39,7 +39,7 @@ interface Props {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Budgets',
+        title: 'Budget',
         href: '/budgets',
     },
 ];
@@ -54,7 +54,7 @@ export default function BudgetsIndex({ budgetData, currentMonth }: Props) {
     };
 
     const handleDelete = (budget: Budget) => {
-        if (confirm('Are you sure you want to remove this budget?')) {
+        if (confirm('Apakah Anda yakin ingin menghapus budget ini?')) {
             router.delete(destroy.url(budget.id), { preserveScroll: true });
         }
     };
@@ -72,7 +72,7 @@ export default function BudgetsIndex({ budgetData, currentMonth }: Props) {
         if (!yyyyMm) return '';
         const [year, m] = yyyyMm.split('-');
         const date = new Date(Number(year), Number(m) - 1);
-        return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
     };
 
     // Derived stats
@@ -82,14 +82,14 @@ export default function BudgetsIndex({ budgetData, currentMonth }: Props) {
 
     return (
         <>
-            <Head title="Budgets" />
+            <Head title="Budget" />
             
             <div className="flex h-full flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6 max-w-5xl mx-auto w-full">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">Budgets</h1>
+                        <h1 className="text-2xl font-semibold tracking-tight">Budget</h1>
                         <p className="text-sm text-muted-foreground">
-                            Manage your spending limits for expense accounts.
+                            Kelola batas pengeluaran untuk akun beban Anda.
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -107,8 +107,8 @@ export default function BudgetsIndex({ budgetData, currentMonth }: Props) {
                 {/* Overall Summary Card */}
                 <Card className="bg-muted/30 border-dashed">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Overall {formatMonth(month)} Budget</CardTitle>
-                        <CardDescription>How you're tracking across all budgeted expense accounts.</CardDescription>
+                        <CardTitle className="text-lg">Ringkasan Budget {formatMonth(month)}</CardTitle>
+                        <CardDescription>Pelacakan di semua akun beban yang dianggarkan.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex justify-between items-end mb-2">
@@ -118,7 +118,7 @@ export default function BudgetsIndex({ budgetData, currentMonth }: Props) {
                             </div>
                             <div className="text-right">
                                 <Badge variant={totalPercentage > 100 ? 'destructive' : totalPercentage > 80 ? 'secondary' : 'default'} className="text-sm">
-                                    {totalPercentage.toFixed(1)}% Used
+                                    {totalPercentage.toFixed(1)}% Terpakai
                                 </Badge>
                             </div>
                         </div>
@@ -146,7 +146,7 @@ export default function BudgetsIndex({ budgetData, currentMonth }: Props) {
                                     <div>
                                         <CardTitle className="text-base">{item.account.name}</CardTitle>
                                         {!isBudgetSet && (
-                                            <CardDescription className="text-xs mt-1">No budget set</CardDescription>
+                                            <CardDescription className="text-xs mt-1">Budget belum ditetapkan</CardDescription>
                                         )}
                                     </div>
                                     <div className="flex gap-1">
@@ -155,10 +155,10 @@ export default function BudgetsIndex({ budgetData, currentMonth }: Props) {
                                             size="icon" 
                                             className="h-7 w-7" 
                                             onClick={() => setActiveModalData({ budget: item.budget, account: item.account })}
-                                            title={isBudgetSet ? "Edit Budget" : "Set Budget"}
+                                            title={isBudgetSet ? "Ubah Budget" : "Tetapkan Budget"}
                                         >
                                             {isBudgetSet ? <IconEdit className="h-4 w-4" /> : <IconPlus className="h-4 w-4" />}
-                                            <span className="sr-only">{isBudgetSet ? "Edit" : "Set"}</span>
+                                            <span className="sr-only">{isBudgetSet ? "Ubah" : "Tetapkan"}</span>
                                         </Button>
                                         {isBudgetSet && item.budget && (
                                             <Button 
@@ -166,10 +166,10 @@ export default function BudgetsIndex({ budgetData, currentMonth }: Props) {
                                                 size="icon" 
                                                 className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10" 
                                                 onClick={() => handleDelete(item.budget!)}
-                                                title="Remove Budget"
+                                                title="Hapus Budget"
                                             >
                                                 <IconTrash className="h-4 w-4" />
-                                                <span className="sr-only">Remove</span>
+                                                <span className="sr-only">Hapus</span>
                                             </Button>
                                         )}
                                     </div>
@@ -188,14 +188,14 @@ export default function BudgetsIndex({ budgetData, currentMonth }: Props) {
                                                 className={`h-2 [&>div]:${statusColor}`} 
                                             />
                                             <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                                                <span>{percentage.toFixed(0)}% Used</span>
-                                                <span>{actual > budget ? 'Over Budget' : `${formatCurrency(budget - actual)} Left`}</span>
+                                                <span>{percentage.toFixed(0)}% Terpakai</span>
+                                                <span>{actual > budget ? 'Melebihi Budget' : `${formatCurrency(budget - actual)} Tersisa`}</span>
                                             </div>
                                         </div>
                                     )}
                                     {!isBudgetSet && actual > 0 && (
                                         <div className="mt-2 text-xs text-muted-foreground bg-muted/50 p-2 rounded text-center">
-                                            You've spent {formatCurrency(actual)} this month.
+                                            Anda telah menghabiskan {formatCurrency(actual)} bulan ini.
                                         </div>
                                     )}
                                 </CardContent>

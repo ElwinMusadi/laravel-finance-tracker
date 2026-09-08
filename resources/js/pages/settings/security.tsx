@@ -24,15 +24,15 @@ export default function Security(props: Props) {
 
     return (
         <>
-            <Head title="Security settings" />
+            <Head title="Pengaturan keamanan" />
 
-            <h1 className="sr-only">Security settings</h1>
+            <h1 className="sr-only">Pengaturan keamanan</h1>
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
+                    title="Perbarui password"
+                    description="Pastikan akun Anda menggunakan password panjang dan acak untuk tetap aman"
                 />
 
                 <Form
@@ -61,7 +61,7 @@ export default function Security(props: Props) {
                         <>
                             <div className="grid gap-2">
                                 <Label htmlFor="current_password">
-                                    Current password
+                                    Password saat ini
                                 </Label>
 
                                 <PasswordInput
@@ -77,7 +77,7 @@ export default function Security(props: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
+                                <Label htmlFor="password">Password baru</Label>
 
                                 <PasswordInput
                                     id="password"
@@ -94,7 +94,7 @@ export default function Security(props: Props) {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="password_confirmation">
-                                    Confirm password
+                                    Konfirmasi password
                                 </Label>
 
                                 <PasswordInput
@@ -116,7 +116,7 @@ export default function Security(props: Props) {
                                     disabled={processing}
                                     data-test="update-password-button"
                                 >
-                                    Save
+                                    Simpan
                                 </Button>
                             </div>
                         </>

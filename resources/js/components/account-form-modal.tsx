@@ -79,28 +79,28 @@ export function AccountFormModal({ isOpen, onClose, account, contacts }: Props) 
             <DialogContent className="sm:max-w-[425px]">
                 <form onSubmit={submit}>
                     <DialogHeader>
-                        <DialogTitle>{isEditing ? 'Edit Account' : 'Add Account'}</DialogTitle>
+                        <DialogTitle>{isEditing ? 'Ubah Akun' : 'Tambah Akun'}</DialogTitle>
                         <DialogDescription>
                             {isEditing 
-                                ? 'Update the details for this account.' 
-                                : 'Create a new account. For assets, you can provide an initial opening balance.'}
+                                ? 'Perbarui detail untuk akun ini.'
+                                : 'Buat akun baru. Untuk aset, Anda dapat menambahkan saldo awal.'}
                         </DialogDescription>
                     </DialogHeader>
                     
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
+                            <Label htmlFor="name">Nama</Label>
                             <Input
                                 id="name"
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
-                                placeholder="e.g. Bank BCA, Groceries, Salary"
+                                placeholder="cth. Bank BCA, Belanja, Gaji"
                             />
                             {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="type">Account Type</Label>
+                            <Label htmlFor="type">Tipe Akun</Label>
                             <Select 
                                 value={data.type} 
                                 onValueChange={(val) => {
@@ -111,14 +111,14 @@ export function AccountFormModal({ isOpen, onClose, account, contacts }: Props) 
                                 }}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select a type" />
+                                    <SelectValue placeholder="Pilih tipe" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="asset">Asset (Cash, Bank, E-Wallet, Receivable)</SelectItem>
-                                    <SelectItem value="liability">Liability (Debt, Credit Card)</SelectItem>
-                                    <SelectItem value="revenue">Revenue (Income category)</SelectItem>
-                                    <SelectItem value="expense">Expense (Spending category)</SelectItem>
-                                    <SelectItem value="equity">Equity (System/Opening Balance)</SelectItem>
+                                    <SelectItem value="asset">Aset (Kas, Bank, E-Wallet, Piutang)</SelectItem>
+                                    <SelectItem value="liability">Liabilitas (Hutang, Kartu Kredit)</SelectItem>
+                                    <SelectItem value="revenue">Pendapatan (Kategori pemasukan)</SelectItem>
+                                    <SelectItem value="expense">Beban (Kategori pengeluaran)</SelectItem>
+                                    <SelectItem value="equity">Ekuitas (Sistem/Saldo Awal)</SelectItem>
                                 </SelectContent>
                             </Select>
                             {errors.type && <p className="text-sm text-destructive">{errors.type}</p>}
@@ -126,16 +126,16 @@ export function AccountFormModal({ isOpen, onClose, account, contacts }: Props) 
 
                         {needsContact && (
                             <div className="grid gap-2">
-                                <Label htmlFor="contact_id">Link to Contact (Optional)</Label>
+                                <Label htmlFor="contact_id">Tautkan ke Kontak (Opsional)</Label>
                                 <Select 
                                     value={data.contact_id ? String(data.contact_id) : 'none'} 
                                     onValueChange={(val) => setData('contact_id', val === 'none' ? null : Number(val))}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="No contact" />
+                                        <SelectValue placeholder="Tanpa kontak" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="none">-- No Contact --</SelectItem>
+                                        <SelectItem value="none">-- Tanpa Kontak --</SelectItem>
                                         {contacts.map((c) => (
                                             <SelectItem key={c.id} value={String(c.id)}>
                                                 {c.name}
@@ -144,7 +144,7 @@ export function AccountFormModal({ isOpen, onClose, account, contacts }: Props) 
                                     </SelectContent>
                                 </Select>
                                 <p className="text-xs text-muted-foreground">
-                                    Link to a contact if this account represents a debt (liability) or a loan given out (receivable asset).
+                                    Tautkan ke kontak jika akun ini mewakili hutang (liabilitas) atau pinjaman yang diberikan (aset piutang).
                                 </p>
                                 {errors.contact_id && <p className="text-sm text-destructive">{errors.contact_id}</p>}
                             </div>
@@ -152,7 +152,7 @@ export function AccountFormModal({ isOpen, onClose, account, contacts }: Props) 
 
                         {!isEditing && data.type === 'asset' && (
                             <div className="grid gap-2">
-                                <Label htmlFor="opening_balance">Opening Balance (Optional)</Label>
+                                <Label htmlFor="opening_balance">Saldo Awal (Opsional)</Label>
                                 <Input
                                     id="opening_balance"
                                     type="number"
@@ -173,17 +173,17 @@ export function AccountFormModal({ isOpen, onClose, account, contacts }: Props) 
                                 onCheckedChange={(checked) => setData('is_active', checked as boolean)}
                             />
                             <Label htmlFor="is_active" className="font-normal cursor-pointer">
-                                Active (can be used for new transactions)
+                                Aktif (dapat digunakan untuk transaksi baru)
                             </Label>
                         </div>
                     </div>
                     
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={onClose} disabled={processing}>
-                            Cancel
+                            Batal
                         </Button>
                         <Button type="submit" disabled={processing}>
-                            {processing ? 'Saving...' : 'Save'}
+                            {processing ? 'Menyimpan...' : 'Simpan'}
                         </Button>
                     </DialogFooter>
                 </form>

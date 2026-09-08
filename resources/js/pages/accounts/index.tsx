@@ -32,7 +32,7 @@ interface Props {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Accounts',
+        title: 'Akun',
         href: '/accounts',
     },
 ];
@@ -42,7 +42,7 @@ export default function AccountsIndex({ accounts, contacts }: Props) {
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
 
     const handleDelete = (account: Account) => {
-        if (confirm(`Are you sure you want to delete ${account.name}?`)) {
+        if (confirm(`Apakah Anda yakin ingin menghapus ${account.name}?`)) {
             router.delete(destroy.url(account.id));
         }
     };
@@ -58,6 +58,18 @@ export default function AccountsIndex({ accounts, contacts }: Props) {
         }
     };
 
+    const getTypeLabel = (type: Account['type']) => {
+        const labels: Record<Account['type'], string> = {
+            asset: 'Aset',
+            liability: 'Liabilitas',
+            revenue: 'Pendapatan',
+            expense: 'Beban',
+            equity: 'Ekuitas',
+        };
+
+        return labels[type];
+    };
+
     const formatCurrency = (amount: string | number) => {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -69,44 +81,44 @@ export default function AccountsIndex({ accounts, contacts }: Props) {
 
     return (
         <>
-            <Head title="Accounts" />
+            <Head title="Akun" />
             
             <div className="flex h-full flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">Accounts</h1>
+                        <h1 className="text-2xl font-semibold tracking-tight">Akun</h1>
                         <p className="text-sm text-muted-foreground">
-                            Manage your chart of accounts (Assets, Liabilities, Income, Expenses).
+                            Kelola bagan akun Anda (Aset, Liabilitas, Pendapatan, Pengeluaran).
                         </p>
                     </div>
                     <Button onClick={() => setIsCreateModalOpen(true)}>
                         <IconPlus className="mr-2 h-4 w-4" />
-                        Add Account
+                        Tambah Akun
                     </Button>
                 </div>
 
                 <Card>
                     <CardHeader className="sr-only">
-                        <CardTitle>Accounts List</CardTitle>
-                        <CardDescription>All chart of accounts.</CardDescription>
+                        <CardTitle>Daftar Akun</CardTitle>
+                        <CardDescription>Semua bagan akun.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Contact Link</TableHead>
-                                    <TableHead className="text-right">Balance</TableHead>
+                                    <TableHead>Nama</TableHead>
+                                    <TableHead>Tipe</TableHead>
+                                    <TableHead>Kontak</TableHead>
+                                    <TableHead className="text-right">Saldo</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead className="w-[100px] text-right">Actions</TableHead>
+                                    <TableHead className="w-[100px] text-right">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {accounts.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                                            No accounts found.
+                                            Belum ada akun.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -115,7 +127,7 @@ export default function AccountsIndex({ accounts, contacts }: Props) {
                                             <TableCell className="font-medium">{account.name}</TableCell>
                                             <TableCell>
                                                 <Badge variant="default" className={getTypeColor(account.type)}>
-                                                    {account.type.charAt(0).toUpperCase() + account.type.slice(1)}
+                                                    {getTypeLabel(account.type)}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
@@ -126,9 +138,9 @@ export default function AccountsIndex({ accounts, contacts }: Props) {
                                             </TableCell>
                                             <TableCell>
                                                 {account.is_active ? (
-                                                    <Badge variant="outline" className="text-emerald-600 border-emerald-600">Active</Badge>
+                                                    <Badge variant="outline" className="text-emerald-600 border-emerald-600">Aktif</Badge>
                                                 ) : (
-                                                    <Badge variant="secondary">Inactive</Badge>
+                                                    <Badge variant="secondary">Nonaktif</Badge>
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right">
