@@ -41,4 +41,13 @@ class Contact extends Model
     {
         return $this->hasMany(Account::class);
     }
+
+    /**
+     * Scope: only active contacts.
+     */
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function active(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where('is_active', true);
+    }
 }

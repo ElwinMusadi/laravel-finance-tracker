@@ -4,6 +4,7 @@ import { BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { IconPlus, IconEdit, IconTrash } from '@tabler/icons-react';
@@ -69,7 +70,7 @@ export default function BudgetsIndex({ budgetData, currentMonth }: Props) {
 
     const formatMonth = (yyyyMm: string) => {
         if (!yyyyMm) return '';
-        const [year, m] = yyyMm.split('-');
+        const [year, m] = yyyyMm.split('-');
         const date = new Date(Number(year), Number(m) - 1);
         return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     };

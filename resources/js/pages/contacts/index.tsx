@@ -61,7 +61,7 @@ export default function ContactsIndex({ contacts }: Props) {
                         <CardTitle>Contacts List</CardTitle>
                         <CardDescription>All registered contacts.</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-0">
+                    <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>

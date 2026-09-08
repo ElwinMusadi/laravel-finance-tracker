@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import {
   Avatar,
   AvatarFallback,
@@ -75,27 +76,24 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle
-                />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconCreditCard
-                />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconNotification
-                />
-                Notifications
+              <DropdownMenuItem asChild>
+                <Link href="/settings/profile" className="flex w-full cursor-pointer items-center">
+                  <IconUserCircle className="mr-2 size-4" />
+                  Account Settings
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <IconLogout
-              />
-              Log out
+            <DropdownMenuItem asChild>
+              <Link
+                href="/logout"
+                as="button"
+                method="post"
+                className="flex w-full cursor-pointer items-center text-destructive focus:text-destructive"
+              >
+                <IconLogout className="mr-2 size-4" />
+                Log out
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

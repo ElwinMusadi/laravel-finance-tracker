@@ -174,7 +174,19 @@ const data = {
   ],
 }
 
+import { usePage } from '@inertiajs/react';
+import type { Auth } from '@/types';
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const page = usePage<{ auth?: Auth }>();
+  const user = page.props.auth?.user;
+
+  const currentUser = {
+    name: user?.name ?? data.user.name,
+    email: user?.email ?? data.user.email,
+    avatar: user?.avatar ?? data.user.avatar,
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -184,9 +196,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
-              <a href="#">
+              <a href="/dashboard">
                 <IconInnerShadowTop className="size-5!" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">Finance Tracker</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -198,7 +210,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={currentUser} />
       </SidebarFooter>
     </Sidebar>
   )

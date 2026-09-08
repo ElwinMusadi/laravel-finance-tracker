@@ -90,7 +90,7 @@ export default function AccountsIndex({ accounts, contacts }: Props) {
                         <CardTitle>Accounts List</CardTitle>
                         <CardDescription>All chart of accounts.</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-0">
+                    <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>

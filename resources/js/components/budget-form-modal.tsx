@@ -71,7 +71,7 @@ export function BudgetFormModal({ isOpen, onClose, budget, account, periodMonth 
 
     const formatMonth = (yyyyMm: string) => {
         if (!yyyyMm) return '';
-        const [year, month] = yyyMm.split('-');
+        const [year, month] = yyyyMm.split('-');
         const date = new Date(Number(year), Number(month) - 1);
         return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     };

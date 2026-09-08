@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { IconPlus, IconEdit, IconTrash, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { useState, useCallback } from 'react';
-import { TransactionFormModal } from '@/components/transaction-form-modal';
+import { useTransactionModal } from '@/hooks/use-transaction-modal';
 import { destroy, index as indexRoute } from '@/actions/App/Http/Controllers/TransactionController';
 
 interface Account {
@@ -63,8 +63,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function TransactionsIndex({ transactions, accounts, filters }: Props) {
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+    const { openModal, openEditModal } = useTransactionModal();
 
     // Current filters state
     const [month, setMonth] = useState(filters.month || '');
@@ -116,7 +115,7 @@ export default function TransactionsIndex({ transactions, accounts, filters }: P
                             Record and view the flow of money between your accounts.
                         </p>
                     </div>
-                    <Button onClick={() => setIsCreateModalOpen(true)}>
+                    <Button onClick={openModal}>
                         <IconPlus className="mr-2 h-4 w-4" />
                         Record Transaction
                     </Button>
@@ -169,7 +168,7 @@ export default function TransactionsIndex({ transactions, accounts, filters }: P
                     <CardHeader className="sr-only">
                         <CardTitle>Transactions List</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-0">
+                    <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -219,7 +218,7 @@ export default function TransactionsIndex({ transactions, accounts, filters }: P
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-1">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingTransaction(transaction)}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditModal(transaction)}>
                                                         <IconEdit className="h-4 w-4 text-muted-foreground" />
                                                         <span className="sr-only">Edit</span>
                                                     </Button>
@@ -263,16 +262,6 @@ export default function TransactionsIndex({ transactions, accounts, filters }: P
                     )}
                 </Card>
             </div>
-
-            <TransactionFormModal 
-                isOpen={isCreateModalOpen || editingTransaction !== null}
-                onClose={() => {
-                    setIsCreateModalOpen(false);
-                    setEditingTransaction(null);
-                }}
-                transaction={editingTransaction}
-                accounts={accounts}
-            />
         </>
     );
 }
