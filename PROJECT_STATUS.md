@@ -15,20 +15,20 @@ Kesenjangan utama yang tersisa adalah tidak adanya kepemilikan data melalui `use
 
 ## 1. Stack dan Versi Utama
 
-| Lapisan | Paket / Alat | Versi |
-|---|---|---|
-| Runtime | PHP | 8.3 |
-| Framework | `laravel/framework` | 13.29.0 |
-| Autentikasi | `laravel/fortify` | 1.39.0 |
-| Jembatan SPA | `inertiajs/inertia-laravel` / `@inertiajs/react` | 3.3.1 / ^3.0.0 |
-| UI | React + TypeScript | ^19.2.0 / ^5.7.2 |
-| Styling | Tailwind CSS v4 + shadcn/ui | ^4.0.0 |
-| Grafik | Recharts | 3.8.0 |
-| Analisis statis | Larastan (PHPStan level 7) | 3.10.0 |
-| Gaya kode | Laravel Pint | 1.30.5 |
-| Pengujian | Pest | 4.7.8 |
-| Tipe rute | Laravel Wayfinder | 0.1.21 |
-| DB produksi / tes | MySQL / SQLite in-memory | — |
+| Lapisan           | Paket / Alat                                     | Versi            |
+| ----------------- | ------------------------------------------------ | ---------------- |
+| Runtime           | PHP                                              | 8.3              |
+| Framework         | `laravel/framework`                              | 13.29.0          |
+| Autentikasi       | `laravel/fortify`                                | 1.39.0           |
+| Jembatan SPA      | `inertiajs/inertia-laravel` / `@inertiajs/react` | 3.3.1 / ^3.0.0   |
+| UI                | React + TypeScript                               | ^19.2.0 / ^5.7.2 |
+| Styling           | Tailwind CSS v4 + shadcn/ui                      | ^4.0.0           |
+| Grafik            | Recharts                                         | 3.8.0            |
+| Analisis statis   | Larastan (PHPStan level 7)                       | 3.10.0           |
+| Gaya kode         | Laravel Pint                                     | 1.30.5           |
+| Pengujian         | Pest                                             | 4.7.8            |
+| Tipe rute         | Laravel Wayfinder                                | 0.1.21           |
+| DB produksi / tes | MySQL / SQLite in-memory                         | —                |
 
 ---
 
@@ -49,12 +49,12 @@ app/
 
 ### Model domain
 
-| Model | Kolom penting | Catatan |
-|---|---|---|
-| `Account` | `name`, `type`, `contact_id`, `is_active` | Lima tipe: `asset`, `liability`, `revenue`, `expense`, `equity` |
-| `Contact` | `name`, `is_active` | Terhubung ke akun |
-| `Transaction` | `transaction_date`, `source_account_id`, `destination_account_id`, `amount`, `description` | Entri ganda; belum memiliki `user_id` |
-| `Budget` | `account_id`, `period_month`, `amount` | Berbasis periode; belum memiliki `user_id` |
+| Model         | Kolom penting                                                                              | Catatan                                                         |
+| ------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| `Account`     | `name`, `type`, `contact_id`, `is_active`                                                  | Lima tipe: `asset`, `liability`, `revenue`, `expense`, `equity` |
+| `Contact`     | `name`, `is_active`                                                                        | Terhubung ke akun                                               |
+| `Transaction` | `transaction_date`, `source_account_id`, `destination_account_id`, `amount`, `description` | Entri ganda; belum memiliki `user_id`                           |
+| `Budget`      | `account_id`, `period_month`, `amount`                                                     | Berbasis periode; belum memiliki `user_id`                      |
 
 > Tidak ada `user_id` pada model domain. Semua data saat ini dibagikan kepada setiap pengguna yang telah login.
 
@@ -76,14 +76,14 @@ Modal transaksi global menggunakan hook `useTransactionModal`, dipasang pada `Ap
 
 ## 3. Status Fitur
 
-| Fitur | Status | Detail |
-|---|---|---|
-| Autentikasi | Selesai | Login Fortify, profil, ubah password, tampilan, 2FA, dan passkey. Pendaftaran dinonaktifkan. |
-| Akun | Selesai | CRUD, validasi, status aktif, saldo awal, dan tautan kontak. |
-| Kontak | Selesai | CRUD dan perlindungan penghapusan saat masih terhubung ke akun. |
-| Transaksi | Selesai | CRUD, filter bulan/akun, paginasi, serta validasi matriks tipe akun. |
-| Budget | Selesai | CRUD, rekap pemakaian, dan indikator progres. |
-| Dasbor | Selesai | Metrik ringkasan dan transaksi terbaru. Grafik masih menggunakan data contoh. |
+| Fitur            | Status  | Detail                                                                                                             |
+| ---------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
+| Autentikasi      | Selesai | Login Fortify, profil, ubah password, tampilan, 2FA, dan passkey. Pendaftaran dinonaktifkan.                       |
+| Akun             | Selesai | CRUD, validasi, status aktif, saldo awal, dan tautan kontak.                                                       |
+| Kontak           | Selesai | CRUD dan perlindungan penghapusan saat masih terhubung ke akun.                                                    |
+| Transaksi        | Selesai | CRUD, filter bulan/akun, paginasi, serta validasi matriks tipe akun.                                               |
+| Budget           | Selesai | CRUD, rekap pemakaian, dan indikator progres.                                                                      |
+| Dasbor           | Selesai | Metrik ringkasan dan transaksi terbaru. Grafik masih menggunakan data contoh.                                      |
 | Bahasa Indonesia | Selesai | Locale Laravel, validasi, pesan flash, halaman, autentikasi, pengaturan, dan komponen aktif telah dialihbahasakan. |
 
 ---

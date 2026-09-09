@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { IconPlus, IconEdit, IconTrash } from '@tabler/icons-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { ContactFormModal } from '@/components/contact-form-modal';
 import { destroy } from '@/actions/App/Http/Controllers/ContactController';
@@ -51,7 +51,7 @@ export default function ContactsIndex({ contacts }: Props) {
                         </p>
                     </div>
                     <Button onClick={() => setIsCreateModalOpen(true)}>
-                        <IconPlus className="mr-2 h-4 w-4" />
+                        <Plus className="mr-2 h-4 w-4" />
                         Tambah Kontak
                     </Button>
                 </div>
@@ -95,11 +95,11 @@ export default function ContactsIndex({ contacts }: Props) {
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="ghost" size="icon" onClick={() => setEditingContact(contact)}>
-                                                        <IconEdit className="h-4 w-4 text-muted-foreground" />
+                                                        <Pencil className="h-4 w-4 text-muted-foreground" />
                                                         <span className="sr-only">Ubah</span>
                                                     </Button>
                                                     <Button variant="ghost" size="icon" onClick={() => handleDelete(contact)} disabled={contact.transactions_count > 0}>
-                                                        <IconTrash className="h-4 w-4 text-destructive" />
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
                                                         <span className="sr-only">Hapus</span>
                                                     </Button>
                                                 </div>
