@@ -235,7 +235,6 @@ export default function TransactionsIndex({
             <form onSubmit={handleSearchSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2.5">
                 {/* Search */}
-                <div className="relative flex-1 min-w-50">
                 <div className="relative w-full lg:flex-[1.5]">
                   <IconSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input
@@ -260,7 +259,6 @@ export default function TransactionsIndex({
                 </div>
 
                 {/* Month Filter */}
-                <div className="w-full sm:w-44">
                 <div className="w-full lg:flex-1">
                   <Input
                     type="month"
@@ -276,7 +274,6 @@ export default function TransactionsIndex({
                 </div>
 
                 {/* Account Filter */}
-                <div className="w-full sm:w-44">
                 <div className="w-full lg:flex-1">
                   <Select
                     value={accountId}
@@ -300,7 +297,6 @@ export default function TransactionsIndex({
                 </div>
 
                 {/* Category Filter */}
-                <div className="w-full sm:w-44">
                 <div className="w-full lg:flex-1">
                   <Select
                     value={categoryId}
