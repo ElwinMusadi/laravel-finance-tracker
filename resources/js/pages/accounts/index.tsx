@@ -335,18 +335,22 @@ export default function AccountsIndex({
                         ))}
                     </div>
                 ) : (
-                    <Card className="border-border/60 shadow-xs">
+                    <Card className="border-border/60 shadow-xs overflow-hidden">
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent">
                                         <TableHead>Nama Akun</TableHead>
-                                        <TableHead>Tipe</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">
+                                        <TableHead className="w-36">
+                                            Tipe
+                                        </TableHead>
+                                        <TableHead className="w-28">
+                                            Status
+                                        </TableHead>
+                                        <TableHead className="w-44 text-right">
                                             Saldo
                                         </TableHead>
-                                        <TableHead className="w-[100px] text-right">
+                                        <TableHead className="w-20 text-right">
                                             Aksi
                                         </TableHead>
                                     </TableRow>
@@ -354,11 +358,15 @@ export default function AccountsIndex({
                                 <TableBody>
                                     {filteredAccounts.map((item) => (
                                         <TableRow key={item.id}>
-                                            <TableCell className="font-semibold flex items-center gap-2">
-                                                {getAccountIcon(
-                                                    item.account_type?.name,
-                                                )}
-                                                <span>{item.name}</span>
+                                            <TableCell className="font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    {getAccountIcon(
+                                                        item.account_type?.name,
+                                                    )}
+                                                    <span className="font-semibold text-foreground">
+                                                        {item.name}
+                                                    </span>
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge

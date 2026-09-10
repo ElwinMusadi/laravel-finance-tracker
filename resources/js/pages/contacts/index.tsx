@@ -187,15 +187,19 @@ export default function ContactsIndex({ contacts = [] }: Props) {
                 </div>
 
                 {/* Table */}
-                <Card className="border-border/60 shadow-xs">
+                <Card className="border-border/60 shadow-xs overflow-hidden">
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow className="hover:bg-transparent">
                                     <TableHead>Nama Kontak</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Riwayat Transaksi</TableHead>
-                                    <TableHead className="w-[100px] text-right">
+                                    <TableHead className="w-32">
+                                        Status
+                                    </TableHead>
+                                    <TableHead className="w-48">
+                                        Riwayat Transaksi
+                                    </TableHead>
+                                    <TableHead className="w-20 text-right">
                                         Aksi
                                     </TableHead>
                                 </TableRow>

@@ -256,7 +256,7 @@ export default function Dashboard({
                 {/* Recent Transactions & Quick Actions */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Recent Transactions List */}
-                    <Card className="lg:col-span-2 border-border/60 shadow-xs">
+                    <Card className="lg:col-span-2 border-border/60 shadow-xs overflow-hidden">
                         <CardHeader className="flex flex-row items-center justify-between pb-3">
                             <div>
                                 <CardTitle className="text-base font-semibold">
@@ -278,14 +278,16 @@ export default function Dashboard({
                             <Table>
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent">
-                                        <TableHead className="w-[110px]">
+                                        <TableHead className="w-32">
                                             Tanggal
                                         </TableHead>
                                         <TableHead>
                                             Deskripsi & Kategori
                                         </TableHead>
-                                        <TableHead>Akun</TableHead>
-                                        <TableHead className="text-right">
+                                        <TableHead className="w-40">
+                                            Akun
+                                        </TableHead>
+                                        <TableHead className="w-36 text-right">
                                             Nominal
                                         </TableHead>
                                     </TableRow>

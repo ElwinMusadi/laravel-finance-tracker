@@ -347,16 +347,20 @@ export default function CategoriesIndex({
                 </div>
 
                 {/* Table */}
-                <Card className="border-border/60 shadow-xs">
+                <Card className="border-border/60 shadow-xs overflow-hidden">
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow className="hover:bg-transparent">
                                     <TableHead>Nama Kategori</TableHead>
-                                    <TableHead>Tipe</TableHead>
-                                    <TableHead>Batas Budget Bulanan</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="w-[100px] text-right">
+                                    <TableHead className="w-36">Tipe</TableHead>
+                                    <TableHead className="w-48">
+                                        Batas Budget Bulanan
+                                    </TableHead>
+                                    <TableHead className="w-28">
+                                        Status
+                                    </TableHead>
+                                    <TableHead className="w-20 text-right">
                                         Aksi
                                     </TableHead>
                                 </TableRow>
