@@ -1,14 +1,37 @@
-import { Head, Link, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { BreadcrumbItem } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { ContactFormModal } from '@/components/contact-form-modal';
-import { destroy } from '@/actions/App/Http/Controllers/ContactController';
+import { Head, router } from "@inertiajs/react";
+import AppLayout from "@/layouts/app-layout";
+import { BreadcrumbItem } from "@/types";
+import { Button } from "@/components/ui/button";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from "@/components/ui/card";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { useState, useMemo } from "react";
+import { ContactFormModal } from "@/components/contact-form-modal";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { destroy } from "@/actions/App/Http/Controllers/ContactController";
+import {
+    IconPencil,
+    IconTrash,
+    IconPlus,
+    IconSearch,
+    IconUsers,
+    IconUserCheck,
+    IconArrowsExchange,
+} from "@tabler/icons-react";
 
 interface Contact {
     id: number;
@@ -23,84 +46,254 @@ interface Props {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Kontak',
-        href: '/contacts',
+        title: "Kontak",
+        href: "/contacts",
     },
 ];
 
-export default function ContactsIndex({ contacts }: Props) {
+export default function ContactsIndex({ contacts = [] }: Props) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingContact, setEditingContact] = useState<Contact | null>(null);
+    const [deletingContact, setDeletingContact] = useState<Contact | null>(
+        null,
+    );
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [search, setSearch] = useState("");
 
-    const handleDelete = (contact: Contact) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus ${contact.name}?`)) {
-            router.delete(destroy.url(contact.id));
-        }
+    const counts = useMemo(() => {
+        return {
+            total: contacts.length,
+            active: contacts.filter((c) => c.is_active).length,
+            withTransactions: contacts.filter((c) => c.transactions_count > 0)
+                .length,
+        };
+    }, [contacts]);
+
+    const filteredContacts = useMemo(() => {
+        if (!search.trim()) return contacts;
+        return contacts.filter((c) =>
+            c.name.toLowerCase().includes(search.toLowerCase()),
+        );
+    }, [contacts, search]);
+
+    const handleDelete = () => {
+        if (!deletingContact) return;
+        setIsDeleting(true);
+        router.delete(destroy.url(deletingContact.id), {
+            preserveState: true,
+            onFinish: () => {
+                setIsDeleting(false);
+                setDeletingContact(null);
+            },
+        });
     };
 
     return (
         <>
-            <Head title="Kontak" />
-            
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6">
-                <div className="flex items-center justify-between">
+            <Head title="Kontak Relasi" />
+
+            <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6 max-w-7xl mx-auto w-full">
+                {/* Header */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">Kontak</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            Daftar Kontak
+                        </h1>
                         <p className="text-sm text-muted-foreground">
-                            Kelola orang atau organisasi yang Anda pinjami atau pinjam dari mereka.
+                            Pihak ketiga, debitur, kreditur, atau relasi yang
+                            terhubung dengan catatan utang & piutang Anda.
                         </p>
                     </div>
-                    <Button onClick={() => setIsCreateModalOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
+                    <Button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="shadow-xs self-start sm:self-auto"
+                    >
+                        <IconPlus className="mr-1.5 size-4" />
                         Tambah Kontak
                     </Button>
                 </div>
 
-                <Card>
-                    <CardHeader className="sr-only">
-                        <CardTitle>Daftar Kontak</CardTitle>
-                        <CardDescription>Semua kontak terdaftar.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Card className="border-border/60 shadow-xs">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardDescription className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    Total Kontak Terdaftar
+                                </CardDescription>
+                                <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+                                    <IconUsers className="size-4" />
+                                </div>
+                            </div>
+                            <CardTitle className="text-2xl font-bold tabular-nums">
+                                {counts.total} Kontak
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0 text-xs text-muted-foreground">
+                            Daftar relasi pinjaman dan piutang Anda
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-border/60 shadow-xs">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardDescription className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    Kontak Aktif
+                                </CardDescription>
+                                <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                    <IconUserCheck className="size-4" />
+                                </div>
+                            </div>
+                            <CardTitle className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                                {counts.active} Kontak
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0 text-xs text-muted-foreground">
+                            Dapat dipilih pada transaksi utang/piutang baru
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-border/60 shadow-xs">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardDescription className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    Memiliki Transaksi
+                                </CardDescription>
+                                <div className="p-1.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                    <IconArrowsExchange className="size-4" />
+                                </div>
+                            </div>
+                            <CardTitle className="text-2xl font-bold tabular-nums">
+                                {counts.withTransactions} Kontak
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0 text-xs text-muted-foreground">
+                            Terkait dengan riwayat mutasi keuangan
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Search Toolbar */}
+                <div className="flex items-center justify-between gap-3">
+                    <div className="relative w-full sm:w-72">
+                        <IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Cari nama kontak..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="pl-9 text-sm"
+                        />
+                    </div>
+                </div>
+
+                {/* Table */}
+                <Card className="border-border/60 shadow-xs">
+                    <CardContent className="p-0">
                         <Table>
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead>Nama</TableHead>
+                                <TableRow className="hover:bg-transparent">
+                                    <TableHead>Nama Kontak</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead>Akun Terhubung</TableHead>
-                                    <TableHead className="w-[100px] text-right">Aksi</TableHead>
+                                    <TableHead>Riwayat Transaksi</TableHead>
+                                    <TableHead className="w-[100px] text-right">
+                                        Aksi
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {contacts.length === 0 ? (
+                                {filteredContacts.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                                            Belum ada kontak.
+                                        <TableCell
+                                            colSpan={4}
+                                            className="h-32 text-center text-sm text-muted-foreground"
+                                        >
+                                            <div className="flex flex-col items-center justify-center gap-1">
+                                                <IconUsers className="size-8 text-muted-foreground/40 mb-1" />
+                                                <p className="font-medium text-foreground">
+                                                    Tidak ada kontak ditemukan
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {search
+                                                        ? `Tidak ada kontak bernama "${search}".`
+                                                        : "Belum ada kontak terdaftar. Tekan Tambah Kontak untuk memulai."}
+                                                </p>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    contacts.map((contact) => (
-                                        <TableRow key={contact.id}>
-                                            <TableCell className="font-medium">{contact.name}</TableCell>
-                                            <TableCell>
-                                                {contact.is_active ? (
-                                                    <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">Aktif</Badge>
-                                                ) : (
-                                                    <Badge variant="secondary">Nonaktif</Badge>
-                                                )}
+                                    filteredContacts.map((contact) => (
+                                        <TableRow
+                                            key={contact.id}
+                                            className="text-xs sm:text-sm"
+                                        >
+                                            <TableCell className="font-semibold text-foreground">
+                                                {contact.name}
                                             </TableCell>
                                             <TableCell>
-                                                {contact.transactions_count} transaksi
+                                                <Badge
+                                                    variant={
+                                                        contact.is_active
+                                                            ? "outline"
+                                                            : "secondary"
+                                                    }
+                                                    className={
+                                                        contact.is_active
+                                                            ? "border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                                                            : ""
+                                                    }
+                                                >
+                                                    {contact.is_active
+                                                        ? "Aktif"
+                                                        : "Nonaktif"}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                <span className="font-medium text-foreground font-mono">
+                                                    {contact.transactions_count}
+                                                </span>{" "}
+                                                transaksi terhubung
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button variant="ghost" size="icon" onClick={() => setEditingContact(contact)}>
-                                                        <Pencil className="h-4 w-4 text-muted-foreground" />
-                                                        <span className="sr-only">Ubah</span>
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="size-7"
+                                                        onClick={() =>
+                                                            setEditingContact(
+                                                                contact,
+                                                            )
+                                                        }
+                                                    >
+                                                        <IconPencil className="size-3.5" />
+                                                        <span className="sr-only">
+                                                            Ubah
+                                                        </span>
                                                     </Button>
-                                                    <Button variant="ghost" size="icon" onClick={() => handleDelete(contact)} disabled={contact.transactions_count > 0}>
-                                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                                        <span className="sr-only">Hapus</span>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                        onClick={() =>
+                                                            setDeletingContact(
+                                                                contact,
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            contact.transactions_count >
+                                                            0
+                                                        }
+                                                        title={
+                                                            contact.transactions_count >
+                                                            0
+                                                                ? "Kontak tidak dapat dihapus karena memiliki transaksi"
+                                                                : "Hapus Kontak"
+                                                        }
+                                                    >
+                                                        <IconTrash className="size-3.5" />
+                                                        <span className="sr-only">
+                                                            Hapus
+                                                        </span>
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -113,7 +306,8 @@ export default function ContactsIndex({ contacts }: Props) {
                 </Card>
             </div>
 
-            <ContactFormModal 
+            {/* Modal Form */}
+            <ContactFormModal
                 isOpen={isCreateModalOpen || editingContact !== null}
                 onClose={() => {
                     setIsCreateModalOpen(false);
@@ -121,8 +315,21 @@ export default function ContactsIndex({ contacts }: Props) {
                 }}
                 contact={editingContact}
             />
+
+            {/* Delete Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={deletingContact !== null}
+                onClose={() => setDeletingContact(null)}
+                onConfirm={handleDelete}
+                title="Hapus Kontak"
+                description={`Apakah Anda yakin ingin menghapus kontak "${deletingContact?.name}"? Tindakan ini hanya dapat dilakukan bila kontak belum memiliki riwayat transaksi.`}
+                confirmText="Hapus Kontak"
+                isLoading={isDeleting}
+            />
         </>
     );
 }
 
-ContactsIndex.layout = (page: React.ReactNode) => <AppLayout breadcrumbs={breadcrumbs}>{page}</AppLayout>;
+ContactsIndex.layout = (page: React.ReactNode) => (
+    <AppLayout breadcrumbs={breadcrumbs}>{page}</AppLayout>
+);

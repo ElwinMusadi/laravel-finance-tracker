@@ -1,15 +1,23 @@
 # Status Proyek
 
-> **Tanggal snapshot:** 8 September 2026
-> **Cakupan:** Analisis statis codebase dan pengujian otomatis. Tidak mencakup profiling runtime atau penelusuran UI manual.
+> **Tanggal snapshot:** 10 September 2026
+> **Cakupan:** Analisis statis codebase, modernisasi UI/UX, dan pengujian otomatis.
 
 ---
 
 ## Ringkasan Eksekutif
 
-Laravel Finance Tracker adalah aplikasi keuangan pribadi untuk satu pengguna yang dibangun dengan Laravel, Inertia, dan React. Domain inti—pembukuan bergaya entri ganda melalui lima tipe bagan akun—sudah diimplementasikan dan diuji. Aplikasi mendukung autentikasi, akun, kontak, transaksi, dan budget.
+Laravel Finance Tracker adalah aplikasi keuangan pribadi yang dibangun dengan Laravel 13, Inertia.js v3, dan React 19. Aplikasi menggunakan arsitektur berbasis kategori (_category-driven_) untuk pencatatan transaksi (Pemasukan, Pengeluaran, Transfer, Utang, dan Piutang), batas budget terintegrasi pada kategori pengeluaran, akun dengan label bebas, serta relasi kontak untuk pencatatan utang-piutang.
 
-Kesenjangan utama yang tersisa adalah tidak adanya kepemilikan data melalui `user_id` pada data keuangan. Aplikasi berjalan sebagai single-tenant secara praktik, tetapi belum mencegah pengguna terautentikasi lain mengakses data yang sama. Sebagian komponen antarmuka masih berupa scaffold dari starter kit.
+Seluruh antarmuka (UI/UX) telah dimodernisasi mengikuti standar aplikasi finansial modern:
+
+- Sistem umpan balik notifikasi instan (Sonner flash toast).
+- Konfirmasi aksi destruktif seragam (`ConfirmDialog`).
+- Dasbor interaktif dengan grafik perbandingan arus kas riil 6 bulan terakhir (Recharts) dan kartu KPI modern.
+- Halaman riwayat transaksi dengan pencarian deskripsi, filter multi-kriteria, badge nominal terwarnai, dan paginasi.
+- Halaman akun dengan tampilan ganda (kartu dompet visual dan tabel) serta ringkasan total saldo aset.
+- Halaman budget dengan visualisasi _progress bar_ dan indikator status kesehatan anggaran.
+- Navigasi sidebar bersih tanpa tautan placeholder dan menggunakan SPA navigation (`<Link>`).
 
 ---
 
@@ -24,6 +32,7 @@ Kesenjangan utama yang tersisa adalah tidak adanya kepemilikan data melalui `use
 | UI                | React + TypeScript                               | ^19.2.0 / ^5.7.2 |
 | Styling           | Tailwind CSS v4 + shadcn/ui                      | ^4.0.0           |
 | Grafik            | Recharts                                         | 3.8.0            |
+| Notifikasi Toast  | Sonner                                           | ^2.0.0           |
 | Analisis statis   | Larastan (PHPStan level 7)                       | 3.10.0           |
 | Gaya kode         | Laravel Pint                                     | 1.30.5           |
 | Pengujian         | Pest                                             | 4.7.8            |
@@ -38,127 +47,79 @@ Kesenjangan utama yang tersisa adalah tidak adanya kepemilikan data melalui `use
 
 ```text
 app/
-├── Http/Controllers/   AccountController, BudgetController, ContactController,
-│                       DashboardController, TransactionController
-├── Http/Requests/      Store*/Update* untuk empat model domain
-├── Models/             Account, Budget, Contact, Transaction, User
+├── Enums/              CategoryType, TransactionAction
+├── Http/Controllers/   AccountController, BudgetController, CategoryController,
+│                       ContactController, DashboardController, TransactionController
+├── Http/Requests/      Store*/Update* untuk model domain
+├── Models/             Account, AccountType, Category, Contact, Transaction, User
 └── Services/
-    ├── AccountTypeMatrix   Aturan kombinasi tipe akun
-    └── LedgerService       Saldo, kekayaan bersih, agregasi pemasukan/pengeluaran
+    └── LedgerService   Kalkulasi saldo akun, kekayaan bersih, agregasi arus kas
 ```
 
 ### Model domain
 
-| Model         | Kolom penting                                                                              | Catatan                                                         |
-| ------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| `Account`     | `name`, `type`, `contact_id`, `is_active`                                                  | Lima tipe: `asset`, `liability`, `revenue`, `expense`, `equity` |
-| `Contact`     | `name`, `is_active`                                                                        | Terhubung ke akun                                               |
-| `Transaction` | `transaction_date`, `source_account_id`, `destination_account_id`, `amount`, `description` | Entri ganda; belum memiliki `user_id`                           |
-| `Budget`      | `account_id`, `period_month`, `amount`                                                     | Berbasis periode; belum memiliki `user_id`                      |
-
-> Tidak ada `user_id` pada model domain. Semua data saat ini dibagikan kepada setiap pengguna yang telah login.
+| Model         | Kolom penting                                                                                                                    | Catatan                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `Account`     | `name`, `account_type_id`, `is_active`                                                                                           | Terhubung ke `AccountType` sebagai label bebas                                 |
+| `AccountType` | `name`                                                                                                                           | Label bebas tipe akun (Bank, Dompet Digital, Kas)                              |
+| `Category`    | `name`, `type`, `budget_limit`, `is_active`                                                                                      | Tipe: `income`, `expense`, `debt`, `receivable`, `transfer`, `opening_balance` |
+| `Contact`     | `name`, `is_active`                                                                                                              | Relasi untuk transaksi utang dan piutang                                       |
+| `Transaction` | `transaction_date`, `amount`, `description`, `category_id`, `account_id`, `transfer_account_id`, `contact_id`, `action`, `notes` | Transaksi berbasis kategori                                                    |
+| `User`        | Autentikasi Fortify, 2FA, passkeys                                                                                               | Single-user                                                                    |
 
 ### Struktur frontend
 
 ```text
 resources/js/
-├── pages/       dasbor, akun, kontak, transaksi, budget, welcome
-├── components/  empat modal formulir, sidebar, navigasi, grafik, dan komponen UI
-├── hooks/       use-transaction-modal, use-flash-toast, use-appearance, …
-├── layouts/     app-sidebar-layout dengan TransactionFormModal global
+├── pages/       dasbor, akun, kategori, kontak, transaksi, budget, settings, auth
+├── components/  modal transaksi global, confirm dialog, form modals, chart arus kas, sidebar
+├── hooks/       use-transaction-modal, use-flash-toast, use-appearance, use-mobile
+├── layouts/     app-sidebar-layout dengan useFlashToast & TransactionFormModal
 ├── actions/     binding controller Wayfinder
 └── routes/      binding named-route Wayfinder
 ```
-
-Modal transaksi global menggunakan hook `useTransactionModal`, dipasang pada `AppSidebarLayout`, dan dapat dipicu dari sidebar atau tabel transaksi.
 
 ---
 
 ## 3. Status Fitur
 
-| Fitur            | Status  | Detail                                                                                                             |
-| ---------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
-| Autentikasi      | Selesai | Login Fortify, profil, ubah password, tampilan, 2FA, dan passkey. Pendaftaran dinonaktifkan.                       |
-| Akun             | Selesai | CRUD, validasi, status aktif, saldo awal, dan tautan kontak.                                                       |
-| Kontak           | Selesai | CRUD dan perlindungan penghapusan saat masih terhubung ke akun.                                                    |
-| Transaksi        | Selesai | CRUD, filter bulan/akun, paginasi, serta validasi matriks tipe akun.                                               |
-| Budget           | Selesai | CRUD, rekap pemakaian, dan indikator progres.                                                                      |
-| Dasbor           | Selesai | Metrik ringkasan dan transaksi terbaru. Grafik masih menggunakan data contoh.                                      |
-| Bahasa Indonesia | Selesai | Locale Laravel, validasi, pesan flash, halaman, autentikasi, pengaturan, dan komponen aktif telah dialihbahasakan. |
+| Fitur          | Status  | Detail                                                                                                             |
+| -------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
+| Autentikasi    | Selesai | Login Fortify, profil, ubah password, tampilan, 2FA, dan passkey.                                                  |
+| Dasbor         | Selesai | KPI cards finansial, grafik arus kas 6 bulan riil (Recharts), transaksi terbaru, dan akses cepat.                  |
+| Transaksi      | Selesai | CRUD, pencarian deskripsi, filter bulan/akun/kategori, paginasi, indikator warna nominal, dan modal konfirmasi.    |
+| Akun           | Selesai | CRUD, ringkasan saldo total, tampilan kartu dompet/tabel, status aktif/nonaktif, saldo awal, dan konfirmasi hapus. |
+| Budget         | Selesai | Rekap pemakaian anggaran bulanan, kartu progress bar interaktif dengan indikator kesehatan (Aman, Waspada, Over).  |
+| Kategori       | Selesai | CRUD via modal responsif, badge tipe kategori berwarna, filter tipe, dan batas budget belanja.                     |
+| Kontak         | Selesai | CRUD via modal, kartu ringkasan relasi, pencarian kontak, proteksi penghapusan dengan modal konfirmasi.            |
+| Umpan Balik UX | Selesai | Integrasi session flash Laravel dengan Sonner toast di root layout (`useFlashToast`).                              |
+| Navigasi       | Selesai | Sidebar bersih dari tautan placeholder, menggunakan SPA `<Link>` tanpa reload, avatar inisial dinamis.             |
 
 ---
 
-## 4. Risiko dan Kesenjangan
+## 4. Kesenjangan & Roadmap Selanjutnya
 
-### Tinggi
+### P0 — Multi-Tenancy (Bila diperlukan lebih dari satu pengguna)
 
-1. **Kepemilikan data belum ada.** Semua data keuangan tidak dibatasi oleh pengguna. Tambahkan `user_id`, scope kueri, policy, dan pengujian isolasi tenant sebelum mendukung lebih dari satu pengguna.
-2. **Notifikasi flash perlu dipastikan dipasang pada layout.** Pastikan `useFlashToast()` dipanggil agar pesan sukses dan gagal dapat terlihat pengguna.
+- [ ] Tambahkan kolom `user_id` pada model `Account`, `Category`, `Contact`, `Transaction`.
+- [ ] Tambahkan query scopes dan policy otorisasi per pengguna.
 
-### Sedang
+### P1 — Fitur Tambahan & Pelaporan
 
-3. **Grafik dasbor bersifat statis.** `ChartAreaInteractive` masih memakai data contoh. Kirim agregasi harian dari `DashboardController` dan gunakan pada grafik.
-4. **Tautan sidebar scaffold.** Sejumlah tautan placeholder masih mengarah ke `#`; hapus atau implementasikan sebelum dirilis.
-5. **Dua lockfile frontend.** `package-lock.json` dan `pnpm-lock.yaml` sama-sama tersedia. Pilih satu manajer paket untuk hasil build yang konsisten.
-
-### Rendah
-
-6. Ganti `usePage<any>()` dengan tipe props Inertia yang eksplisit.
-7. Hapus impor `tw-animate-css` yang duplikat bila masih ada.
-8. Hapus pengguna fallback scaffold pada sidebar.
+- [ ] Ekspor data transaksi dan saldo ke format CSV / Excel.
+- [ ] Laporan perbandingan anggaran antar periode.
+- [ ] Fitur transaksi berulang (_recurring transactions_).
 
 ---
 
-## 5. Roadmap
+## 5. Bukti Validasi
 
-### P0 — Keamanan data
+Jalankan perintah berikut untuk validasi:
 
-- [ ] Tetapkan aplikasi sebagai single-user secara eksplisit atau tambahkan `user_id` pada semua model domain.
-- [ ] Tambahkan policy dan isolasi kueri berdasarkan pengguna.
-- [ ] Pastikan notifikasi flash ditampilkan pada semua halaman aplikasi.
-
-### P1 — Kelengkapan fungsi
-
-- [ ] Hubungkan grafik dasbor dengan transaksi nyata.
-- [ ] Selesaikan atau hapus navigasi placeholder.
-- [ ] Tetapkan satu manajer paket frontend.
-
-### P2 — Kualitas dan UX
-
-- [ ] Tambahkan tipe props Inertia pada layout dan komponen.
-- [ ] Kurangi prop global yang tidak diperlukan.
-- [ ] Tambahkan pengukuran cakupan tes pada CI.
-
-### P3 — Pengembangan fitur
-
-- [ ] Ekspor CSV/Excel untuk akun dan transaksi.
-- [ ] Pencarian lintas entitas.
-- [ ] Jadwal transaksi berulang.
-- [ ] Notifikasi pelampauan budget.
-- [ ] Laporan perbandingan periode.
-- [ ] Dukungan multi-mata uang.
-
----
-
-## 6. Bukti Validasi
-
-Jalankan perintah berikut setelah perubahan:
-
-```text
+```bash
 php artisan config:clear
 vendor/bin/pest --compact
 vendor/bin/pint --dirty --format agent
-vendor/bin/phpstan analyse
+npm run types:check
 npm run build
 ```
-
-Pengujian sebelumnya mencatat 89 tes lulus, 2 dilewati, dan tidak ada kegagalan. Hasil harus diperbarui setelah seluruh perubahan lokalisasi divalidasi.
-
----
-
-## 7. Batasan Analisis
-
-- Tidak ada sesi browser langsung; perilaku rendering React dan modal belum diverifikasi secara manual.
-- Tidak ada laporan cakupan tes.
-- Analisis performa dan audit keamanan OWASP belum dilakukan.
-- Dokumentasi ini mencerminkan snapshot codebase pada tanggal yang tercantum.

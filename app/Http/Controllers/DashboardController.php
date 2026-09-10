@@ -34,8 +34,8 @@ class DashboardController extends Controller
         $totalBudget = Category::query()->where('type', CategoryType::Expense)->sum('budget_limit');
 
         $budgetUsedPercentage = $totalBudget > 0
-            ? min((floatval($monthlyExpense) / floatval($totalBudget)) * 100, 100)
-            : 0;
+          ? min((floatval($monthlyExpense) / floatval($totalBudget)) * 100, 100)
+          : 0;
 
         // Recent Transactions
         $recentTransactions = Transaction::with(['account', 'transferAccount', 'category', 'contact'])
@@ -43,6 +43,19 @@ class DashboardController extends Controller
             ->latest('id')
             ->take(5)
             ->get();
+
+        // 6-Month Cash Flow Trend
+        $cashFlowTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $monthDate = $now->copy()->subMonths($i);
+            $mStart = $monthDate->copy()->startOfMonth();
+            $mEnd = $monthDate->copy()->endOfMonth();
+            $cashFlowTrend[] = [
+                'month' => $monthDate->translatedFormat('M Y'),
+                'income' => (float) $this->ledger->getTotalIncome($mStart, $mEnd),
+                'expense' => (float) $this->ledger->getTotalExpenses($mStart, $mEnd),
+            ];
+        }
 
         return Inertia::render('dashboard', [
             'metrics' => [
@@ -57,8 +70,9 @@ class DashboardController extends Controller
                 'totalBudget' => number_format((float) $totalBudget, 2, '.', ''),
                 'budgetUsedPercentage' => round($budgetUsedPercentage, 1),
             ],
+            'cashFlowTrend' => $cashFlowTrend,
             'recentTransactions' => $recentTransactions,
-            'currentMonth' => $now->format('F Y'),
+            'currentMonth' => $now->translatedFormat('F Y'),
         ]);
     }
 }

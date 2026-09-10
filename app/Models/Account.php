@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
-use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @method static Builder<static> active()
+ */
 #[Fillable(['name', 'account_type_id', 'icon', 'color', 'is_active'])]
 class Account extends Model
 {
-    /** @use HasFactory<AccountFactory> */
     use HasFactory;
 
     protected function casts(): array
@@ -39,8 +39,13 @@ class Account extends Model
         return $this->hasMany(Transaction::class, 'transfer_account_id');
     }
 
-    #[Scope]
-    protected function active(Builder $query): Builder
+    /**
+     * Scope a query to only include active accounts.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }

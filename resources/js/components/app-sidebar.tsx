@@ -1,6 +1,6 @@
 import * as React from "react";
+import { Link, usePage } from "@inertiajs/react";
 
-import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
@@ -20,141 +20,61 @@ import {
     IconTags,
     IconFolder,
     IconUsers,
-    IconCamera,
-    IconFileDescription,
-    IconFileAi,
     IconSettings,
-    IconHelp,
-    IconSearch,
-    IconDatabase,
-    IconReport,
-    IconFileWord,
-    IconInnerShadowTop,
+    IconWallet,
 } from "@tabler/icons-react";
+import type { Auth } from "@/types";
 
-const data = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
-    },
+const navigationItems = {
     navMain: [
         {
             title: "Dasbor",
             url: "/dashboard",
-            icon: <IconDashboard />,
-        },
-        {
-            title: "Akun",
-            url: "/accounts",
-            icon: <IconListDetails />,
-        },
-        {
-            title: "Kategori",
-            url: "/categories",
-            icon: <IconTags />,
-        },
-        {
-            title: "Kontak",
-            url: "/contacts",
-            icon: <IconUsers />,
+            icon: <IconDashboard className="size-4" />,
         },
         {
             title: "Transaksi",
             url: "/transactions",
-            icon: <IconChartBar />,
+            icon: <IconChartBar className="size-4" />,
+        },
+        {
+            title: "Akun",
+            url: "/accounts",
+            icon: <IconListDetails className="size-4" />,
         },
         {
             title: "Budget",
             url: "/budgets",
-            icon: <IconFolder />,
-        },
-    ],
-    navClouds: [
-        {
-            title: "Capture",
-            icon: <IconCamera />,
-            isActive: true,
-            url: "#",
-            items: [
-                {
-                    title: "Active Proposals",
-                    url: "#",
-                },
-                {
-                    title: "Archived",
-                    url: "#",
-                },
-            ],
+            icon: <IconFolder className="size-4" />,
         },
         {
-            title: "Proposal",
-            icon: <IconFileDescription />,
-            url: "#",
-            items: [
-                {
-                    title: "Active Proposals",
-                    url: "#",
-                },
-                {
-                    title: "Archived",
-                    url: "#",
-                },
-            ],
+            title: "Kategori",
+            url: "/categories",
+            icon: <IconTags className="size-4" />,
         },
         {
-            title: "Prompts",
-            icon: <IconFileAi />,
-            url: "#",
-            items: [
-                {
-                    title: "Active Proposals",
-                    url: "#",
-                },
-                {
-                    title: "Archived",
-                    url: "#",
-                },
-            ],
+            title: "Kontak",
+            url: "/contacts",
+            icon: <IconUsers className="size-4" />,
         },
     ],
     navSecondary: [
         {
             title: "Pengaturan",
-            url: "#",
-            icon: <IconSettings />,
-        },
-    ],
-    documents: [
-        {
-            name: "Pustaka Data",
-            url: "#",
-            icon: <IconDatabase />,
-        },
-        {
-            name: "Laporan",
-            url: "#",
-            icon: <IconReport />,
-        },
-        {
-            name: "Asisten Word",
-            url: "#",
-            icon: <IconFileWord />,
+            url: "/settings/profile",
+            icon: <IconSettings className="size-4" />,
         },
     ],
 };
-
-import { usePage } from "@inertiajs/react";
-import type { Auth } from "@/types";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const page = usePage<{ auth?: Auth }>();
     const user = page.props.auth?.user;
 
     const currentUser = {
-        name: user?.name ?? data.user.name,
-        email: user?.email ?? data.user.email,
-        avatar: user?.avatar ?? data.user.avatar,
+        name: user?.name ?? "Pengguna",
+        email: user?.email ?? "",
+        avatar: user?.avatar ?? "",
     };
 
     return (
@@ -164,22 +84,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             asChild
-                            className="data-[slot=sidebar-menu-button]:p-1.5!"
+                            size="lg"
+                            className="data-[slot=sidebar-menu-button]:p-2"
                         >
-                            <a href="/dashboard">
-                                <IconInnerShadowTop className="size-5!" />
-                                <span className="text-base font-semibold">
-                                    Finance Tracker
-                                </span>
-                            </a>
+                            <Link
+                                href="/dashboard"
+                                className="flex items-center gap-3"
+                            >
+                                <div className="flex aspect-square size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs">
+                                    <IconWallet className="size-5" />
+                                </div>
+                                <div className="grid flex-1 text-left text-sm leading-tight">
+                                    <span className="truncate font-semibold tracking-tight">
+                                        Finance Tracker
+                                    </span>
+                                    <span className="truncate text-xs text-muted-foreground">
+                                        Personal Ledger
+                                    </span>
+                                </div>
+                            </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
-                <NavDocuments items={data.documents} />
-                <NavSecondary items={data.navSecondary} className="mt-auto" />
+                <NavMain items={navigationItems.navMain} />
+                <NavSecondary
+                    items={navigationItems.navSecondary}
+                    className="mt-auto"
+                />
             </SidebarContent>
             <SidebarFooter>
                 <NavUser user={currentUser} />

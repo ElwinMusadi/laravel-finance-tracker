@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Database\Factories\ContactFactory;
+// use Database\Factories\ContactFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,11 +16,12 @@ use Illuminate\Support\Carbon;
  * @property bool $is_active
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ *
+ * @method static Builder<static> active()
  */
 #[Fillable(['name', 'is_active'])]
 class Contact extends Model
 {
-    /** @use HasFactory<ContactFactory> */
     use HasFactory;
 
     /**
@@ -46,9 +46,11 @@ class Contact extends Model
 
     /**
      * Scope: only active contacts.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
-    #[Scope]
-    protected function active(Builder $query): Builder
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }
