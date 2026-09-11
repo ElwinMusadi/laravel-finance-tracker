@@ -1,6 +1,6 @@
 # Status Proyek
 
-> **Tanggal snapshot:** 10 September 2026
+> **Tanggal snapshot:** 11 September 2026
 > **Cakupan:** Analisis statis codebase, modernisasi UI/UX, dan pengujian otomatis.
 
 ---
@@ -65,7 +65,7 @@ app/
 | `Category`    | `name`, `type`, `budget_limit`, `is_active`                                                                                      | Tipe: `income`, `expense`, `debt`, `receivable`, `transfer`, `opening_balance` |
 | `Contact`     | `name`, `is_active`                                                                                                              | Relasi untuk transaksi utang dan piutang                                       |
 | `Transaction` | `transaction_date`, `amount`, `description`, `category_id`, `account_id`, `transfer_account_id`, `contact_id`, `action`, `notes` | Transaksi berbasis kategori                                                    |
-| `User`        | Autentikasi Fortify, 2FA, passkeys                                                                                               | Single-user                                                                    |
+| `User`        | `name`, `username`, password, 2FA, passkeys                                                                                     | Login username unik; tidak menyimpan email; single-user                        |
 
 ### Struktur frontend
 
@@ -85,7 +85,7 @@ resources/js/
 
 | Fitur          | Status  | Detail                                                                                                             |
 | -------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
-| Autentikasi    | Selesai | Login Fortify, profil, ubah password, tampilan, 2FA, dan passkey.                                                  |
+| Autentikasi    | Selesai | Login berbasis username dan password, profil, ubah password, 2FA, dan passkey. Reset password serta verifikasi email dihapus. |
 | Dasbor         | Selesai | KPI cards finansial, grafik arus kas 6 bulan riil (Recharts), transaksi terbaru, dan akses cepat.                  |
 | Transaksi      | Selesai | CRUD, pencarian deskripsi, filter bulan/akun/kategori, paginasi, indikator warna nominal, dan modal konfirmasi.    |
 | Akun           | Selesai | CRUD, ringkasan saldo total, tampilan kartu dompet/tabel, status aktif/nonaktif, saldo awal, dan konfirmasi hapus. |
@@ -112,7 +112,15 @@ resources/js/
 
 ---
 
-## 5. Bukti Validasi
+## 5. Operasional Autentikasi
+
+- Login hanya menerima `username` dan `password`; data serta kredensial email telah dihapus.
+- Akun admin seed memakai `ADMIN_USERNAME` dengan nilai default `admin`; password tetap memakai `ADMIN_PASSWORD` dengan nilai default `password`.
+- Reset password dan verifikasi email dihapus karena alur tersebut memerlukan alamat email.
+
+---
+
+## 6. Bukti Validasi
 
 Jalankan perintah berikut untuk validasi:
 

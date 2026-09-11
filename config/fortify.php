@@ -19,35 +19,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Fortify Password Broker
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify which password broker Fortify can use when a user
-    | is resetting their password. This configured value should match one
-    | of your password brokers setup in your "auth" configuration file.
-    |
-    */
-
-    'passwords' => 'users',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Username / Email
+    | Username
     |--------------------------------------------------------------------------
     |
     | This value defines which model attribute should be considered as your
-    | application's "username" field. Typically, this might be the email
-    | address of the users but you are free to change this value here.
-    |
-    | Out of the box, Fortify expects forgot password and reset password
-    | requests to have a field named 'email'. If the application uses
-    | another name for the field you may define it below as needed.
+    | application's username field.
     |
     */
 
-    'username' => 'email',
-
-    'email' => 'email',
+    'username' => 'username',
 
     /*
     |--------------------------------------------------------------------------
@@ -108,8 +88,8 @@ return [
     | Rate Limiting
     |--------------------------------------------------------------------------
     |
-    | By default, Fortify will throttle logins to five requests per minute for
-    | every email and IP address combination. However, if you would like to
+    | The login limiter throttles login attempts by username and IP address.
+    | If you would like to
     | specify a custom rate limiter to call then you may specify it here.
     |
     */
@@ -162,8 +142,6 @@ return [
 
     'features' => [
         // Features::registration(), // Disabled: single-tenant personal app, admin seeded via CLI
-        Features::resetPasswords(),
-        Features::emailVerification(),
         Features::twoFactorAuthentication([
             'confirm' => true,
             'confirmPassword' => true,

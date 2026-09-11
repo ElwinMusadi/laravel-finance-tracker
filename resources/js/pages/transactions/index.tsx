@@ -282,7 +282,7 @@ export default function TransactionsIndex({
                       applyFilter({ account_id: val });
                     }}
                   >
-                    <SelectTrigger className="h-9 text-sm">
+                    <SelectTrigger className="w-full h-9 text-sm">
                       <SelectValue placeholder="Semua Akun" />
                     </SelectTrigger>
                     <SelectContent>
@@ -305,7 +305,7 @@ export default function TransactionsIndex({
                       applyFilter({ category_id: val });
                     }}
                   >
-                    <SelectTrigger className="h-9 text-sm">
+                    <SelectTrigger className="w-full h-9 text-sm">
                       <SelectValue placeholder="Semua Kategori" />
                     </SelectTrigger>
                     <SelectContent>

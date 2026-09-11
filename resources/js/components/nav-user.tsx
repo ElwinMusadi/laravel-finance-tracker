@@ -1,5 +1,5 @@
-import { Link } from "@inertiajs/react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link } from '@inertiajs/react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,39 +8,39 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
     useSidebar,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 import {
     IconDotsVertical,
     IconUserCircle,
     IconCreditCard,
     IconNotification,
     IconLogout,
-} from "@tabler/icons-react";
+} from '@tabler/icons-react';
 
 export function NavUser({
     user,
 }: {
     user: {
         name: string;
-        email: string;
+        username: string;
         avatar: string;
     };
 }) {
     const { isMobile } = useSidebar();
     const initials = user.name
         ? user.name
-              .split(" ")
+              .split(' ')
               .filter(Boolean)
               .slice(0, 2)
               .map((n) => n[0].toUpperCase())
-              .join("")
-        : "FT";
+              .join('')
+        : 'FT';
 
     return (
         <SidebarMenu>
@@ -56,7 +56,7 @@ export function NavUser({
                                     src={user.avatar}
                                     alt={user.name}
                                 />
-                                <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary">
+                                <AvatarFallback className="bg-primary/10 text-primary rounded-lg text-xs font-semibold">
                                     {initials}
                                 </AvatarFallback>
                             </Avatar>
@@ -64,8 +64,8 @@ export function NavUser({
                                 <span className="truncate font-medium">
                                     {user.name}
                                 </span>
-                                <span className="truncate text-xs text-muted-foreground">
-                                    {user.email}
+                                <span className="text-muted-foreground truncate text-xs">
+                                    {user.username}
                                 </span>
                             </div>
                             <IconDotsVertical className="ml-auto size-4" />
@@ -73,7 +73,7 @@ export function NavUser({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                        side={isMobile ? "bottom" : "right"}
+                        side={isMobile ? 'bottom' : 'right'}
                         align="end"
                         sideOffset={4}
                     >
@@ -84,7 +84,7 @@ export function NavUser({
                                         src={user.avatar}
                                         alt={user.name}
                                     />
-                                    <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary">
+                                    <AvatarFallback className="bg-primary/10 text-primary rounded-lg text-xs font-semibold">
                                         {initials}
                                     </AvatarFallback>
                                 </Avatar>
@@ -92,8 +92,8 @@ export function NavUser({
                                     <span className="truncate font-medium">
                                         {user.name}
                                     </span>
-                                    <span className="truncate text-xs text-muted-foreground">
-                                        {user.email}
+                                    <span className="text-muted-foreground truncate text-xs">
+                                        {user.username}
                                     </span>
                                 </div>
                             </div>
@@ -116,7 +116,7 @@ export function NavUser({
                                 href="/logout"
                                 as="button"
                                 method="post"
-                                className="flex w-full cursor-pointer items-center text-destructive focus:text-destructive"
+                                className="text-destructive focus:text-destructive flex w-full cursor-pointer items-center"
                             >
                                 <IconLogout className="mr-2 size-4" />
                                 Logout
