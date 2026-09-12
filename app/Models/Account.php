@@ -11,8 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @method static Builder<static> active()
+ * @method static Builder<static> ordered()
  */
-#[Fillable(['name', 'account_type_id', 'icon', 'color', 'is_active'])]
+#[Fillable(['name', 'account_type_id', 'icon', 'color', 'is_active', 'sort_order'])]
 class Account extends Model
 {
     use HasFactory;
@@ -48,5 +49,16 @@ class Account extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope a query to the configured account display order.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeOrdered(Builder $query): Builder
+    {
+        return $query->orderBy('sort_order')->orderBy('id');
     }
 }

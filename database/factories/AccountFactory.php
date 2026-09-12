@@ -24,6 +24,7 @@ class AccountFactory extends Factory
             'icon' => null,
             'color' => null,
             'is_active' => true,
+            'sort_order' => fake()->unique()->numberBetween(1, 1000),
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\CategoryType;
+use App\Http\Requests\ReorderAccountsRequest;
 use App\Http\Requests\StoreAccountRequest;
 use App\Http\Requests\UpdateAccountRequest;
 use App\Models\Account;
@@ -21,7 +22,7 @@ class AccountController extends Controller
 
     public function index(): Response
     {
-        $accounts = Account::with('accountType')->orderBy('name')->get()->each(function (Account $account): void {
+        $accounts = Account::with('accountType')->ordered()->get()->each(function (Account $account): void {
             $account->balance = $this->ledger->getAccountBalance($account);
         });
 
@@ -33,7 +34,12 @@ class AccountController extends Controller
         DB::transaction(function () use ($request): void {
             $validated = $request->validated();
             $accountType = $this->resolveAccountType($validated['account_type'] ?? null);
-            $account = Account::create([...$validated, 'account_type_id' => $accountType?->id]);
+            $sortOrder = (Account::query()->lockForUpdate()->max('sort_order') ?? 0) + 1;
+            $account = Account::create([
+                ...$validated,
+                'account_type_id' => $accountType?->id,
+                'sort_order' => $sortOrder,
+            ]);
 
             if ($request->filled('opening_balance') && (float) $validated['opening_balance'] > 0) {
                 $category = Category::firstOrCreate(['type' => CategoryType::OpeningBalance, 'name' => 'Saldo Awal'], ['is_active' => true]);
@@ -42,6 +48,29 @@ class AccountController extends Controller
         });
 
         return redirect()->route('accounts.index')->with('success', 'Akun berhasil dibuat.');
+    }
+
+    public function reorder(ReorderAccountsRequest $request): RedirectResponse
+    {
+        $accountIds = $request->validated('account_ids');
+
+        DB::transaction(function () use ($accountIds): void {
+            $currentAccountIds = Account::query()
+                ->lockForUpdate()
+                ->ordered()
+                ->pluck('id')
+                ->all();
+
+            if (array_diff($currentAccountIds, $accountIds) !== [] || array_diff($accountIds, $currentAccountIds) !== []) {
+                abort(409, 'Daftar akun telah berubah. Muat ulang halaman dan coba lagi.');
+            }
+
+            foreach ($accountIds as $index => $accountId) {
+                Account::query()->whereKey($accountId)->update(['sort_order' => $index + 1]);
+            }
+        }, attempts: 3);
+
+        return redirect()->route('accounts.index')->with('success', 'Urutan akun diperbarui.');
     }
 
     public function update(UpdateAccountRequest $request, Account $account): RedirectResponse

@@ -8,6 +8,7 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\Contact;
 use App\Models\Transaction;
+use App\Services\LedgerService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,8 @@ use Inertia\Response;
 
 class TransactionController extends Controller
 {
+    public function __construct(private LedgerService $ledger) {}
+
     public function index(Request $request): Response
     {
         $query = Transaction::with(['account', 'transferAccount', 'category', 'contact'])->latest('transaction_date')->latest('id');
@@ -41,9 +44,13 @@ class TransactionController extends Controller
             });
         }
 
+        $accounts = Account::active()->with('accountType')->ordered()->get()->each(function (Account $account): void {
+            $account->balance = $this->ledger->getAccountBalance($account);
+        });
+
         return Inertia::render('transactions/index', [
             'transactions' => $query->paginate(25)->withQueryString(),
-            'accounts' => Account::active()->orderBy('name')->get(),
+            'accounts' => $accounts,
             'categories' => Category::active()->orderBy('type')->orderBy('name')->get(),
             'contacts' => Contact::active()->orderBy('name')->get(),
             'filters' => $request->only(['month', 'account_id', 'category_id', 'search']),

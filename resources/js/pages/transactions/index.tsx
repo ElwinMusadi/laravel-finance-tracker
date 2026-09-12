@@ -1,11 +1,23 @@
 import { Head, Link, router } from "@inertiajs/react";
-import { useCallback, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   destroy,
   index as indexRoute,
 } from "@/actions/App/Http/Controllers/TransactionController";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -25,7 +37,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useTransactionModal } from "@/hooks/use-transaction-modal";
+import { AccountBrandIcon } from "@/components/account-brand-icon";
 import AppLayout from "@/layouts/app-layout";
+import { resolveAccountBrand } from "@/lib/account-brands";
+import { cn } from "@/lib/utils";
 import type { BreadcrumbItem } from "@/types";
 import {
   IconPencil,
@@ -39,9 +54,15 @@ import {
   IconArrowUpRight,
   IconChevronLeft,
   IconChevronRight,
+  IconWallet,
 } from "@tabler/icons-react";
 
-type Account = { id: number; name: string };
+type Account = {
+  id: number;
+  name: string;
+  balance: string;
+  account_type?: { name: string } | null;
+};
 type Category = { id: number; name: string; type: string };
 type Contact = { id: number; name: string };
 
@@ -110,6 +131,33 @@ export default function TransactionsIndex({
   const [accountId, setAccountId] = useState(filters.account_id ?? "all");
   const [categoryId, setCategoryId] = useState(filters.category_id ?? "all");
   const [search, setSearch] = useState(filters.search ?? "");
+  const [hasMoreAccountBalances, setHasMoreAccountBalances] = useState(false);
+  const accountBalancesRef = useRef<HTMLDivElement>(null);
+
+  const updateAccountBalanceOverflow = useCallback(() => {
+    const container = accountBalancesRef.current;
+
+    if (!container) {
+      setHasMoreAccountBalances(false);
+      return;
+    }
+
+    setHasMoreAccountBalances(
+      container.scrollLeft + container.clientWidth < container.scrollWidth - 1,
+    );
+  }, []);
+
+  useEffect(() => {
+    const container = accountBalancesRef.current;
+
+    if (!container) return;
+
+    updateAccountBalanceOverflow();
+    const resizeObserver = new ResizeObserver(updateAccountBalanceOverflow);
+    resizeObserver.observe(container);
+
+    return () => resizeObserver.disconnect();
+  }, [accounts.length, updateAccountBalanceOverflow]);
 
   // Delete confirmation state
   const [deletingTransaction, setDeletingTransaction] =
@@ -228,6 +276,104 @@ export default function TransactionsIndex({
             Tambah Transaksi
           </Button>
         </div>
+
+        {/* Account Balances */}
+        <section aria-labelledby="account-balances-heading" className="min-w-0">
+          <div className="mb-3 flex items-end justify-between gap-3">
+            <div>
+              <h2
+                id="account-balances-heading"
+                className="font-heading text-base font-semibold"
+              >
+                Saldo akun
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Saldo terkini untuk akun yang dapat digunakan bertransaksi.
+              </p>
+            </div>
+            {accounts.length > 1 && (
+              <span className="hidden text-xs text-muted-foreground sm:inline">
+                Geser untuk melihat akun lainnya
+              </span>
+            )}
+          </div>
+
+          {accounts.length > 0 ? (
+            <div
+              className={cn(
+                "relative min-w-0",
+                hasMoreAccountBalances &&
+                  "after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-8 after:bg-linear-to-l after:from-background after:to-transparent",
+              )}
+            >
+              <div
+                ref={accountBalancesRef}
+                tabIndex={0}
+                aria-label="Daftar saldo akun, geser horizontal untuk melihat akun lain."
+                onScroll={updateAccountBalanceOverflow}
+                className="no-scrollbar flex snap-x snap-mandatory flex-nowrap gap-3 overflow-x-auto overscroll-x-contain scroll-smooth rounded-xl pb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                {accounts.map((account) => {
+                  const numericBalance = Number(account.balance);
+                  const isNegative =
+                    numericBalance < 0 || Object.is(numericBalance, -0);
+                  const brand = resolveAccountBrand(account.name);
+
+                  return (
+                    <Card
+                      key={account.id}
+                      size="sm"
+                      className={cn(
+                        "w-[82%] shrink-0 snap-start border-l-4 sm:w-[calc(50%_-_0.375rem)] lg:w-[calc(33.333%_-_0.5rem)] xl:w-[calc(25%_-_0.5625rem)]",
+                        !brand && "border-l-primary",
+                      )}
+                      style={
+                        brand
+                          ? { borderLeftColor: brand.accentColor }
+                          : undefined
+                      }
+                    >
+                      <CardHeader className="grid grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-3 pb-2">
+                        <AccountBrandIcon
+                          brand={brand}
+                          className="size-11 rounded-lg"
+                          iconClassName="size-8"
+                        />
+                        <div className="min-w-0">
+                          <CardTitle className="truncate" title={account.name}>
+                            {account.name}
+                          </CardTitle>
+                          <CardDescription className="truncate text-xs">
+                            {account.account_type?.name ?? "Umum"}
+                          </CardDescription>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <span
+                          className={cn(
+                            "font-mono text-lg font-bold tabular-nums",
+                            isNegative ? "text-destructive" : "text-foreground",
+                          )}
+                        >
+                          {formatCurrency(account.balance)}
+                        </span>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <Card size="sm">
+              <CardHeader>
+                <CardTitle>Belum ada akun aktif</CardTitle>
+                <CardDescription>
+                  Aktifkan atau tambahkan akun agar saldo dapat ditampilkan.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+        </section>
 
         {/* Filter Toolbar */}
         <Card className="border-border/60 shadow-xs">

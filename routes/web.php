@@ -14,6 +14,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('contacts', ContactController::class)->except(['create', 'show', 'edit']);
+    Route::put('accounts/reorder', [AccountController::class, 'reorder'])->name('accounts.reorder');
     Route::resource('accounts', AccountController::class)->except(['create', 'show', 'edit']);
     Route::resource('categories', CategoryController::class)->except(['create', 'show', 'edit']);
     Route::resource('transactions', TransactionController::class)->except(['create', 'show', 'edit']);

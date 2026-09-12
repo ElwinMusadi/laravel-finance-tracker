@@ -1,18 +1,41 @@
-import { Head, router } from "@inertiajs/react";
-import { useState, useMemo } from "react";
-import { destroy } from "@/actions/App/Http/Controllers/AccountController";
-import { AccountFormModal } from "@/components/account-form-modal";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { Button } from "@/components/ui/button";
+import { Head, router } from '@inertiajs/react';
+import {
+    closestCenter,
+    DndContext,
+    KeyboardSensor,
+    PointerSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { useEffect, useMemo, useState } from 'react';
+import {
+    destroy,
+    reorder,
+} from '@/actions/App/Http/Controllers/AccountController';
+import { AccountBrandIcon } from '@/components/account-brand-icon';
+import { AccountFormModal } from '@/components/account-form-modal';
+import { ConfirmDialog } from '@/components/confirm-dialog';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
     CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -20,23 +43,22 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
-import AppLayout from "@/layouts/app-layout";
-import type { BreadcrumbItem } from "@/types";
+} from '@/components/ui/table';
+import AppLayout from '@/layouts/app-layout';
+import { resolveAccountBrand } from '@/lib/account-brands';
+import type { BreadcrumbItem } from '@/types';
 import {
     IconPencil,
     IconTrash,
     IconPlus,
     IconWallet,
-    IconBuildingBank,
-    IconCreditCard,
-    IconCash,
     IconSearch,
     IconLayoutGrid,
     IconList,
     IconCheck,
+    IconGripVertical,
     IconX,
-} from "@tabler/icons-react";
+} from '@tabler/icons-react';
 
 type Account = {
     id: number;
@@ -44,9 +66,114 @@ type Account = {
     account_type?: { name: string } | null;
     is_active: boolean;
     balance: string;
+    sort_order: number;
 };
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: "Akun", href: "/accounts" }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Akun', href: '/accounts' }];
+
+function SortableAccountRow({
+    account,
+    onEdit,
+    onDelete,
+    disabled,
+    formatCurrency,
+}: {
+    account: Account;
+    onEdit: (account: Account) => void;
+    onDelete: (account: Account) => void;
+    disabled: boolean;
+    formatCurrency: (value: string | number) => string;
+}) {
+    const brand = resolveAccountBrand(account.name);
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: account.id, disabled });
+
+    return (
+        <TableRow
+            ref={setNodeRef}
+            data-dragging={isDragging}
+            className="data-[dragging=true]:relative data-[dragging=true]:z-10 data-[dragging=true]:opacity-70"
+            style={{
+                transform: CSS.Transform.toString(transform),
+                transition,
+            }}
+        >
+            <TableCell className="w-12">
+                <Button
+                    {...attributes}
+                    {...listeners}
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={disabled}
+                    aria-label={`Pindahkan ${account.name}`}
+                    className="text-muted-foreground size-11 touch-none hover:bg-transparent"
+                >
+                    <IconGripVertical aria-hidden="true" />
+                    <span className="sr-only">
+                        Seret untuk mengubah urutan akun
+                    </span>
+                </Button>
+            </TableCell>
+            <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                    <AccountBrandIcon
+                        brand={brand}
+                        className="size-7 rounded-md"
+                        iconClassName="size-5"
+                    />
+                    <span className="text-foreground font-semibold">
+                        {account.name}
+                    </span>
+                </div>
+            </TableCell>
+            <TableCell>
+                <Badge variant="secondary" className="text-xs font-normal">
+                    {account.account_type?.name ?? 'Umum'}
+                </Badge>
+            </TableCell>
+            <TableCell>
+                <Badge
+                    variant={account.is_active ? 'outline' : 'secondary'}
+                    className="text-xs"
+                >
+                    {account.is_active ? 'Aktif' : 'Nonaktif'}
+                </Badge>
+            </TableCell>
+            <TableCell className="text-right font-mono font-bold tabular-nums">
+                {formatCurrency(account.balance)}
+            </TableCell>
+            <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-1">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7"
+                        onClick={() => onEdit(account)}
+                    >
+                        <IconPencil className="size-3.5" />
+                        <span className="sr-only">Ubah</span>
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive size-7"
+                        onClick={() => onDelete(account)}
+                    >
+                        <IconTrash className="size-3.5" />
+                        <span className="sr-only">Hapus</span>
+                    </Button>
+                </div>
+            </TableCell>
+        </TableRow>
+    );
+}
 
 export default function AccountsIndex({
     accounts = [],
@@ -60,36 +187,91 @@ export default function AccountsIndex({
         null,
     );
     const [isDeleting, setIsDeleting] = useState(false);
-    const [search, setSearch] = useState("");
-    const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+    const [isReordering, setIsReordering] = useState(false);
+    const [orderedAccounts, setOrderedAccounts] = useState(accounts);
+    const [search, setSearch] = useState('');
+    const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: { distance: 8 },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: { delay: 150, tolerance: 5 },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        }),
+    );
+
+    useEffect(() => {
+        setOrderedAccounts(accounts);
+    }, [accounts]);
 
     const formatCurrency = (val: string | number) => {
-        return new Intl.NumberFormat("id-ID", {
-            style: "currency",
-            currency: "IDR",
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
         }).format(Number(val));
     };
 
     const totalBalance = useMemo(() => {
-        return accounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0);
-    }, [accounts]);
+        return orderedAccounts.reduce(
+            (sum, acc) => sum + Number(acc.balance || 0),
+            0,
+        );
+    }, [orderedAccounts]);
 
     const activeCount = useMemo(() => {
-        return accounts.filter((a) => a.is_active).length;
-    }, [accounts]);
+        return orderedAccounts.filter((a) => a.is_active).length;
+    }, [orderedAccounts]);
 
     const filteredAccounts = useMemo(() => {
-        if (!search.trim()) return accounts;
+        if (!search.trim()) return orderedAccounts;
         const q = search.toLowerCase();
-        return accounts.filter(
+        return orderedAccounts.filter(
             (a) =>
                 a.name.toLowerCase().includes(q) ||
                 (a.account_type?.name &&
                     a.account_type.name.toLowerCase().includes(q)),
         );
-    }, [accounts, search]);
+    }, [orderedAccounts, search]);
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (isReordering || search.trim() || !over || active.id === over.id) {
+            return;
+        }
+
+        const previousAccounts = orderedAccounts;
+        const oldIndex = orderedAccounts.findIndex(
+            (account) => account.id === active.id,
+        );
+        const newIndex = orderedAccounts.findIndex(
+            (account) => account.id === over.id,
+        );
+
+        if (oldIndex === -1 || newIndex === -1) {
+            return;
+        }
+
+        const nextAccounts = arrayMove(orderedAccounts, oldIndex, newIndex);
+        setOrderedAccounts(nextAccounts);
+        setIsReordering(true);
+
+        router.put(
+            reorder.url(),
+            { account_ids: nextAccounts.map((account) => account.id) },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onError: () => setOrderedAccounts(previousAccounts),
+                onFinish: () => setIsReordering(false),
+            },
+        );
+    };
 
     const handleDelete = () => {
         if (!deletingAccount) return;
@@ -103,44 +285,24 @@ export default function AccountsIndex({
         });
     };
 
-    const getAccountIcon = (type?: string | null) => {
-        const t = (type || "").toLowerCase();
-        if (t.includes("bank"))
-            return <IconBuildingBank className="size-5 text-primary" />;
-        if (
-            t.includes("wallet") ||
-            t.includes("dompet") ||
-            t.includes("gopay") ||
-            t.includes("ovo")
-        )
-            return (
-                <IconCreditCard className="size-5 text-emerald-600 dark:text-emerald-400" />
-            );
-        if (t.includes("kas") || t.includes("cash") || t.includes("tunai"))
-            return (
-                <IconCash className="size-5 text-amber-600 dark:text-amber-400" />
-            );
-        return <IconWallet className="size-5 text-primary" />;
-    };
-
     return (
         <>
             <Head title="Akun & Rekening" />
-            <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 max-w-7xl mx-auto w-full">
+            <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 p-4 md:p-6">
                 {/* Header Title */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">
                             Akun Keuangan
                         </h1>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                             Kelola rekening bank, dompet digital, kartu kredit,
                             dan kas tunai Anda.
                         </p>
                     </div>
                     <Button
                         onClick={() => setSelectedAccount(null)}
-                        className="shadow-xs self-start sm:self-auto"
+                        className="self-start shadow-xs sm:self-auto"
                     >
                         <IconPlus className="mr-1.5 size-4" />
                         Tambah Akun
@@ -148,56 +310,57 @@ export default function AccountsIndex({
                 </div>
 
                 {/* Top Summary Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <Card className="border-border/60 shadow-xs">
                         <CardHeader className="pb-2">
-                            <CardDescription className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                            <CardDescription className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
                                 Total Saldo Seluruh Akun
                             </CardDescription>
                             <CardTitle className="text-2xl font-bold tabular-nums">
                                 {formatCurrency(totalBalance)}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-0 text-xs text-muted-foreground">
-                            Akumulasi dari {accounts.length} akun terdaftar
+                        <CardContent className="text-muted-foreground pt-0 text-xs">
+                            Akumulasi dari {orderedAccounts.length} akun
+                            terdaftar
                         </CardContent>
                     </Card>
 
                     <Card className="border-border/60 shadow-xs">
                         <CardHeader className="pb-2">
-                            <CardDescription className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                            <CardDescription className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
                                 Akun Aktif
                             </CardDescription>
-                            <CardTitle className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-2xl font-bold text-emerald-600 tabular-nums dark:text-emerald-400">
                                 <IconCheck className="size-5" />
                                 {activeCount} Akun
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-0 text-xs text-muted-foreground">
+                        <CardContent className="text-muted-foreground pt-0 text-xs">
                             Siap digunakan untuk transaksi harian
                         </CardContent>
                     </Card>
 
                     <Card className="border-border/60 shadow-xs">
                         <CardHeader className="pb-2">
-                            <CardDescription className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                            <CardDescription className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
                                 Akun Nonaktif
                             </CardDescription>
-                            <CardTitle className="text-2xl font-bold tabular-nums text-muted-foreground flex items-center gap-2">
+                            <CardTitle className="text-muted-foreground flex items-center gap-2 text-2xl font-bold tabular-nums">
                                 <IconX className="size-5" />
-                                {accounts.length - activeCount} Akun
+                                {orderedAccounts.length - activeCount} Akun
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-0 text-xs text-muted-foreground">
+                        <CardContent className="text-muted-foreground pt-0 text-xs">
                             Disimpan untuk arsip riwayat pembukuan
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Toolbar (Search & View Mode Toggle) */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                     <div className="relative w-full sm:w-72">
-                        <IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                        <IconSearch className="text-muted-foreground absolute top-2.5 left-2.5 size-4" />
                         <Input
                             placeholder="Cari akun..."
                             value={search}
@@ -205,27 +368,29 @@ export default function AccountsIndex({
                             className="pl-9 text-sm"
                         />
                     </div>
-                    <div className="flex items-center gap-1 border rounded-lg p-1 bg-muted/30 self-end sm:self-auto">
+                    <div className="bg-muted/30 flex items-center gap-1 self-end rounded-lg border p-1 sm:self-auto">
                         <Button
                             type="button"
+                            disabled={isReordering}
                             variant={
-                                viewMode === "grid" ? "secondary" : "ghost"
+                                viewMode === 'grid' ? 'secondary' : 'ghost'
                             }
                             size="sm"
-                            className="h-7 px-2.5 text-xs gap-1.5"
-                            onClick={() => setViewMode("grid")}
+                            className="h-7 gap-1.5 px-2.5 text-xs"
+                            onClick={() => setViewMode('grid')}
                         >
                             <IconLayoutGrid className="size-3.5" />
                             <span>Kartu</span>
                         </Button>
                         <Button
                             type="button"
+                            disabled={isReordering}
                             variant={
-                                viewMode === "table" ? "secondary" : "ghost"
+                                viewMode === 'table' ? 'secondary' : 'ghost'
                             }
                             size="sm"
-                            className="h-7 px-2.5 text-xs gap-1.5"
-                            onClick={() => setViewMode("table")}
+                            className="h-7 gap-1.5 px-2.5 text-xs"
+                            onClick={() => setViewMode('table')}
                         >
                             <IconList className="size-3.5" />
                             <span>Tabel</span>
@@ -233,18 +398,24 @@ export default function AccountsIndex({
                     </div>
                 </div>
 
+                {search.trim() && (
+                    <p className="text-muted-foreground text-xs">
+                        Hapus pencarian untuk mengubah urutan akun.
+                    </p>
+                )}
+
                 {/* Content: Grid or Table */}
                 {filteredAccounts.length === 0 ? (
                     <Card className="border-border/60 shadow-xs">
-                        <CardContent className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">
-                            <IconWallet className="size-10 text-muted-foreground/50 mb-3" />
-                            <p className="font-semibold text-foreground text-base">
+                        <CardContent className="text-muted-foreground flex flex-col items-center justify-center p-12 text-center text-sm">
+                            <IconWallet className="text-muted-foreground/50 mb-3 size-10" />
+                            <p className="text-foreground text-base font-semibold">
                                 Tidak ada akun yang ditemukan
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                            <p className="text-muted-foreground mt-1 max-w-sm text-xs">
                                 {search
                                     ? `Tidak ditemukan akun dengan kata kunci "${search}".`
-                                    : "Mulai dengan menambahkan akun rekening bank, dompet digital, atau uang tunai Anda."}
+                                    : 'Mulai dengan menambahkan akun rekening bank, dompet digital, atau uang tunai Anda.'}
                             </p>
                             {!search && (
                                 <Button
@@ -258,180 +429,152 @@ export default function AccountsIndex({
                             )}
                         </CardContent>
                     </Card>
-                ) : viewMode === "grid" ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredAccounts.map((acc) => (
-                            <Card
-                                key={acc.id}
-                                className={`border-border/60 shadow-xs transition-all hover:shadow-sm ${
-                                    !acc.is_active
-                                        ? "opacity-60 bg-muted/20"
-                                        : ""
-                                }`}
-                            >
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2.5 rounded-lg bg-primary/10">
-                                                {getAccountIcon(
-                                                    acc.account_type?.name,
-                                                )}
+                ) : viewMode === 'grid' ? (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {filteredAccounts.map((acc) => {
+                            const brand = resolveAccountBrand(acc.name);
+
+                            return (
+                                <Card
+                                    key={acc.id}
+                                    className={`border-border/60 shadow-xs transition-all hover:shadow-sm ${
+                                        !acc.is_active
+                                            ? 'bg-muted/20 opacity-60'
+                                            : ''
+                                    }`}
+                                >
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <AccountBrandIcon
+                                                    brand={brand}
+                                                    className="size-11 rounded-lg"
+                                                    iconClassName="size-6"
+                                                />
+                                                <div>
+                                                    <CardTitle className="text-base font-semibold">
+                                                        {acc.name}
+                                                    </CardTitle>
+                                                    <CardDescription className="mt-0.5 flex items-center gap-1.5 text-xs">
+                                                        <span>
+                                                            {acc.account_type
+                                                                ?.name ||
+                                                                'Umum'}
+                                                        </span>
+                                                    </CardDescription>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <CardTitle className="text-base font-semibold">
-                                                    {acc.name}
-                                                </CardTitle>
-                                                <CardDescription className="text-xs flex items-center gap-1.5 mt-0.5">
-                                                    <span>
-                                                        {acc.account_type
-                                                            ?.name || "Umum"}
-                                                    </span>
-                                                </CardDescription>
-                                            </div>
+                                            <Badge
+                                                variant={
+                                                    acc.is_active
+                                                        ? 'outline'
+                                                        : 'secondary'
+                                                }
+                                                className="text-[10px]"
+                                            >
+                                                {acc.is_active
+                                                    ? 'Aktif'
+                                                    : 'Nonaktif'}
+                                            </Badge>
                                         </div>
-                                        <Badge
-                                            variant={
-                                                acc.is_active
-                                                    ? "outline"
-                                                    : "secondary"
+                                    </CardHeader>
+                                    <CardContent className="pt-2 pb-4">
+                                        <div className="text-muted-foreground mb-1 text-xs">
+                                            Saldo Saat Ini:
+                                        </div>
+                                        <div className="text-foreground font-mono text-xl font-bold tracking-tight">
+                                            {formatCurrency(acc.balance)}
+                                        </div>
+                                    </CardContent>
+                                    <div className="bg-muted/10 flex items-center justify-end gap-1 border-t px-4 py-2.5">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-muted-foreground hover:text-foreground h-8 px-2.5 text-xs"
+                                            onClick={() =>
+                                                setSelectedAccount(acc)
                                             }
-                                            className="text-[10px]"
                                         >
-                                            {acc.is_active
-                                                ? "Aktif"
-                                                : "Nonaktif"}
-                                        </Badge>
+                                            <IconPencil className="mr-1 size-3.5" />
+                                            Ubah
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2.5 text-xs"
+                                            onClick={() =>
+                                                setDeletingAccount(acc)
+                                            }
+                                        >
+                                            <IconTrash className="mr-1 size-3.5" />
+                                            Hapus
+                                        </Button>
                                     </div>
-                                </CardHeader>
-                                <CardContent className="pt-2 pb-4">
-                                    <div className="text-xs text-muted-foreground mb-1">
-                                        Saldo Saat Ini:
-                                    </div>
-                                    <div className="text-xl font-bold font-mono tracking-tight text-foreground">
-                                        {formatCurrency(acc.balance)}
-                                    </div>
-                                </CardContent>
-                                <div className="border-t px-4 py-2.5 flex items-center justify-end gap-1 bg-muted/10">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-                                        onClick={() => setSelectedAccount(acc)}
-                                    >
-                                        <IconPencil className="mr-1 size-3.5" />
-                                        Ubah
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 px-2.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
-                                        onClick={() => setDeletingAccount(acc)}
-                                    >
-                                        <IconTrash className="mr-1 size-3.5" />
-                                        Hapus
-                                    </Button>
-                                </div>
-                            </Card>
-                        ))}
+                                </Card>
+                            );
+                        })}
                     </div>
                 ) : (
-                    <Card className="border-border/60 shadow-xs overflow-hidden">
+                    <Card className="border-border/60 overflow-hidden shadow-xs">
                         <CardContent className="p-0">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="hover:bg-transparent">
-                                        <TableHead>Nama Akun</TableHead>
-                                        <TableHead className="w-36">
-                                            Tipe
-                                        </TableHead>
-                                        <TableHead className="w-28">
-                                            Status
-                                        </TableHead>
-                                        <TableHead className="w-44 text-right">
-                                            Saldo
-                                        </TableHead>
-                                        <TableHead className="w-20 text-right">
-                                            Aksi
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredAccounts.map((item) => (
-                                        <TableRow key={item.id}>
-                                            <TableCell className="font-medium">
-                                                <div className="flex items-center gap-2">
-                                                    {getAccountIcon(
-                                                        item.account_type?.name,
-                                                    )}
-                                                    <span className="font-semibold text-foreground">
-                                                        {item.name}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="text-xs font-normal"
-                                                >
-                                                    {item.account_type?.name ??
-                                                        "Umum"}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant={
-                                                        item.is_active
-                                                            ? "outline"
-                                                            : "secondary"
-                                                    }
-                                                    className="text-xs"
-                                                >
-                                                    {item.is_active
-                                                        ? "Aktif"
-                                                        : "Nonaktif"}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right font-mono font-bold tabular-nums">
-                                                {formatCurrency(item.balance)}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end gap-1">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="size-7"
-                                                        onClick={() =>
-                                                            setSelectedAccount(
-                                                                item,
-                                                            )
-                                                        }
-                                                    >
-                                                        <IconPencil className="size-3.5" />
-                                                        <span className="sr-only">
-                                                            Ubah
-                                                        </span>
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                        onClick={() =>
-                                                            setDeletingAccount(
-                                                                item,
-                                                            )
-                                                        }
-                                                    >
-                                                        <IconTrash className="size-3.5" />
-                                                        <span className="sr-only">
-                                                            Hapus
-                                                        </span>
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
+                            <DndContext
+                                collisionDetection={closestCenter}
+                                modifiers={[restrictToVerticalAxis]}
+                                onDragEnd={handleDragEnd}
+                                sensors={sensors}
+                            >
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="hover:bg-transparent">
+                                            <TableHead className="w-12">
+                                                <span className="sr-only">
+                                                    Urutan
+                                                </span>
+                                            </TableHead>
+                                            <TableHead>Nama Akun</TableHead>
+                                            <TableHead className="w-36">
+                                                Tipe
+                                            </TableHead>
+                                            <TableHead className="w-28">
+                                                Status
+                                            </TableHead>
+                                            <TableHead className="w-44 text-right">
+                                                Saldo
+                                            </TableHead>
+                                            <TableHead className="w-20 text-right">
+                                                Aksi
+                                            </TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <SortableContext
+                                        items={filteredAccounts.map(
+                                            (account) => account.id,
+                                        )}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        <TableBody>
+                                            {filteredAccounts.map((account) => (
+                                                <SortableAccountRow
+                                                    key={account.id}
+                                                    account={account}
+                                                    disabled={
+                                                        Boolean(
+                                                            search.trim(),
+                                                        ) || isReordering
+                                                    }
+                                                    formatCurrency={
+                                                        formatCurrency
+                                                    }
+                                                    onEdit={setSelectedAccount}
+                                                    onDelete={
+                                                        setDeletingAccount
+                                                    }
+                                                />
+                                            ))}
+                                        </TableBody>
+                                    </SortableContext>
+                                </Table>
+                            </DndContext>
                         </CardContent>
                     </Card>
                 )}
