@@ -1,40 +1,40 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { useForm } from "@inertiajs/react";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
-import { IconChevronDown } from "@tabler/icons-react";
+import { useEffect, useState, type FormEvent } from 'react';
+import { useForm } from '@inertiajs/react';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
+import { IconChevronDown } from '@tabler/icons-react';
 
 import {
     store,
     update,
-} from "@/actions/App/Http/Controllers/TransactionController";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+} from '@/actions/App/Http/Controllers/TransactionController';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
     Dialog,
     DialogContent,
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
     Field,
     FieldError,
     FieldGroup,
     FieldLabel,
-} from "@/components/ui/field";
+} from '@/components/ui/field';
 import {
     InputGroup,
     InputGroupAddon,
     InputGroupInput,
     InputGroupText,
-} from "@/components/ui/input-group";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/input-group';
+import { Input } from '@/components/ui/input';
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -42,7 +42,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 type Account = { id: number; name: string };
 type Contact = { id: number; name: string };
@@ -64,37 +64,37 @@ type TransactionFormData = {
     transaction_date: string;
     amount: string;
     description: string;
-    category_id: number | "";
-    account_id: number | "";
-    transfer_account_id: number | "";
-    contact_id: number | "";
+    category_id: number | '';
+    account_id: number | '';
+    transfer_account_id: number | '';
+    contact_id: number | '';
     action: string;
     notes: string;
 };
 
 const emptyTransactionForm: TransactionFormData = {
-    transaction_date: "",
-    amount: "",
-    description: "",
-    category_id: "",
-    account_id: "",
-    transfer_account_id: "",
-    contact_id: "",
-    action: "",
-    notes: "",
+    transaction_date: '',
+    amount: '',
+    description: '',
+    category_id: '',
+    account_id: '',
+    transfer_account_id: '',
+    contact_id: '',
+    action: '',
+    notes: '',
 };
 
 function toDateValue(date: Date): string {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
 }
 
 function toTimeValue(date: Date): string {
-    const hour = String(date.getHours()).padStart(2, "0");
-    const minute = String(date.getMinutes()).padStart(2, "0");
+    const hour = String(date.getHours()).padStart(2, '0');
+    const minute = String(date.getMinutes()).padStart(2, '0');
 
     return `${hour}:${minute}`;
 }
@@ -104,8 +104,8 @@ function toLocalDateTimeValue(date: Date): string {
 }
 
 function parseTransactionDate(value: string): Date | undefined {
-    const [date] = value.split("T");
-    const [year, month, day] = date.split("-").map(Number);
+    const [date] = value.split('T');
+    const [year, month, day] = date.split('-').map(Number);
 
     if (!year || !month || !day) {
         return undefined;
@@ -115,15 +115,9 @@ function parseTransactionDate(value: string): Date | undefined {
 }
 
 function updateDate(value: string, date: Date): string {
-    const time = value.split("T")[1] ?? "00:00";
+    const time = value.split('T')[1] ?? '00:00';
 
     return `${toDateValue(date)}T${time}`;
-}
-
-function toUtcDateTimeValue(value: string): string {
-    const date = new Date(value);
-
-    return Number.isNaN(date.getTime()) ? value : date.toISOString();
 }
 
 export function TransactionFormModal({
@@ -147,10 +141,10 @@ export function TransactionFormModal({
         (item) => item.id === form.data.category_id,
     );
     const needsContact =
-        category?.type === "debt" || category?.type === "receivable";
-    const isTransfer = category?.type === "transfer";
+        category?.type === 'debt' || category?.type === 'receivable';
+    const isTransfer = category?.type === 'transfer';
     const selectedDate = parseTransactionDate(form.data.transaction_date);
-    const selectedTime = form.data.transaction_date.split("T")[1] ?? "";
+    const selectedTime = form.data.transaction_date.split('T')[1] ?? '';
 
     useEffect(() => {
         if (!isOpen) {
@@ -170,10 +164,10 @@ export function TransactionFormModal({
                       category_id: transaction.category_id,
                       account_id: transaction.account_id,
                       transfer_account_id:
-                          transaction.transfer_account_id ?? "",
-                      contact_id: transaction.contact_id ?? "",
-                      action: transaction.action ?? "",
-                      notes: transaction.notes ?? "",
+                          transaction.transfer_account_id ?? '',
+                      contact_id: transaction.contact_id ?? '',
+                      action: transaction.action ?? '',
+                      notes: transaction.notes ?? '',
                   }
                 : {
                       ...emptyTransactionForm,
@@ -185,29 +179,14 @@ export function TransactionFormModal({
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
-        const transactionDate = toUtcDateTimeValue(form.data.transaction_date);
 
         if (transaction) {
-            form.transform((data) => ({
-                ...data,
-                transaction_date: transactionDate,
-            }));
-            form.put(update.url(transaction.id), {
-                onSuccess: onClose,
-                onFinish: () => form.transform((data) => data),
-            });
+            form.put(update.url(transaction.id), { onSuccess: onClose });
 
             return;
         }
 
-        form.transform((data) => ({
-            ...data,
-            transaction_date: transactionDate,
-        }));
-        form.post(store.url(), {
-            onSuccess: onClose,
-            onFinish: () => form.transform((data) => data),
-        });
+        form.post(store.url(), { onSuccess: onClose });
     };
 
     const renderOptions = (items: Account[] | Contact[] | Category[]) => (
@@ -226,7 +205,7 @@ export function TransactionFormModal({
                 <form onSubmit={submit}>
                     <DialogHeader>
                         <DialogTitle>
-                            {transaction ? "Ubah Transaksi" : "Catat Transaksi"}
+                            {transaction ? 'Ubah Transaksi' : 'Catat Transaksi'}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -240,7 +219,7 @@ export function TransactionFormModal({
                                 value={form.data.description}
                                 onChange={(event) =>
                                     form.setData(
-                                        "description",
+                                        'description',
                                         event.target.value,
                                     )
                                 }
@@ -258,7 +237,7 @@ export function TransactionFormModal({
                                     value={String(form.data.category_id)}
                                     onValueChange={(value) =>
                                         form.setData(
-                                            "category_id",
+                                            'category_id',
                                             Number(value),
                                         )
                                     }
@@ -288,7 +267,7 @@ export function TransactionFormModal({
                                     value={String(form.data.account_id)}
                                     onValueChange={(value) =>
                                         form.setData(
-                                            "account_id",
+                                            'account_id',
                                             Number(value),
                                         )
                                     }
@@ -324,7 +303,7 @@ export function TransactionFormModal({
                                     )}
                                     onValueChange={(value) =>
                                         form.setData(
-                                            "transfer_account_id",
+                                            'transfer_account_id',
                                             Number(value),
                                         )
                                     }
@@ -359,7 +338,7 @@ export function TransactionFormModal({
                                         value={String(form.data.contact_id)}
                                         onValueChange={(value) =>
                                             form.setData(
-                                                "contact_id",
+                                                'contact_id',
                                                 Number(value),
                                             )
                                         }
@@ -388,7 +367,7 @@ export function TransactionFormModal({
                                     <Select
                                         value={form.data.action}
                                         onValueChange={(value) =>
-                                            form.setData("action", value)
+                                            form.setData('action', value)
                                         }
                                     >
                                         <SelectTrigger
@@ -401,25 +380,25 @@ export function TransactionFormModal({
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
-                                                {(category?.type === "debt"
+                                                {(category?.type === 'debt'
                                                     ? [
                                                           [
-                                                              "receive_loan",
-                                                              "Menerima pinjaman",
+                                                              'receive_loan',
+                                                              'Menerima pinjaman',
                                                           ],
                                                           [
-                                                              "repay_debt",
-                                                              "Membayar utang",
+                                                              'repay_debt',
+                                                              'Membayar utang',
                                                           ],
                                                       ]
                                                     : [
                                                           [
-                                                              "give_loan",
-                                                              "Memberi pinjaman",
+                                                              'give_loan',
+                                                              'Memberi pinjaman',
                                                           ],
                                                           [
-                                                              "receive_repayment",
-                                                              "Menerima pelunasan",
+                                                              'receive_repayment',
+                                                              'Menerima pelunasan',
                                                           ],
                                                       ]
                                                 ).map(([value, label]) => (
@@ -456,7 +435,7 @@ export function TransactionFormModal({
                                     value={form.data.amount}
                                     onChange={(event) =>
                                         form.setData(
-                                            "amount",
+                                            'amount',
                                             event.target.value,
                                         )
                                     }
@@ -492,10 +471,10 @@ export function TransactionFormModal({
                                             {selectedDate
                                                 ? format(
                                                       selectedDate,
-                                                      "d MMMM yyyy",
+                                                      'd MMMM yyyy',
                                                       { locale: id },
                                                   )
-                                                : "Pilih tanggal"}
+                                                : 'Pilih tanggal'}
                                             <IconChevronDown data-icon="inline-end" />
                                         </Button>
                                     </PopoverTrigger>
@@ -515,7 +494,7 @@ export function TransactionFormModal({
                                                 }
 
                                                 form.setData(
-                                                    "transaction_date",
+                                                    'transaction_date',
                                                     updateDate(
                                                         form.data
                                                             .transaction_date,
@@ -548,11 +527,11 @@ export function TransactionFormModal({
                                     onChange={(event) => {
                                         const date =
                                             form.data.transaction_date.split(
-                                                "T",
+                                                'T',
                                             )[0] || toDateValue(new Date());
 
                                         form.setData(
-                                            "transaction_date",
+                                            'transaction_date',
                                             `${date}T${event.target.value}`,
                                         );
                                     }}

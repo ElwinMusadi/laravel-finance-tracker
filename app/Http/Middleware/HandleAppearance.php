@@ -9,6 +9,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class HandleAppearance
 {
+    /** @var array<int, string> */
+    private const FONT_FAMILIES = ['ibm-plex', 'inter', 'manrope'];
+
     /**
      * Handle an incoming request.
      *
@@ -17,7 +20,17 @@ class HandleAppearance
     public function handle(Request $request, Closure $next): Response
     {
         View::share('appearance', $request->cookie('appearance') ?? 'system');
+        View::share('fontFamily', $this->fontFamily($request));
 
         return $next($request);
+    }
+
+    private function fontFamily(Request $request): string
+    {
+        $fontFamily = $request->cookie('font_family');
+
+        return in_array($fontFamily, self::FONT_FAMILIES, true)
+            ? $fontFamily
+            : 'ibm-plex';
     }
 }

@@ -3,6 +3,8 @@
 @import 'tw-animate-css';
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "@fontsource-variable/ibm-plex-sans";
+@import "@fontsource/ibm-plex-mono";
 @import "@fontsource-variable/manrope";
 @import "@fontsource-variable/inter";
 
@@ -12,10 +14,6 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -66,6 +64,9 @@
 }
 
 :root {
+    --font-app-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-app-heading: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-app-mono: "IBM Plex Mono", ui-monospace, monospace;
     --background:
         oklch(1 0 0);
     --foreground:
@@ -131,6 +132,36 @@
         oklch(0.923 0.003 48.717);
     --sidebar-ring:
         oklch(0.709 0.01 56.259);
+}
+
+html[data-font-family='ibm-plex'] {
+    --font-app-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-app-heading: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-app-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+html[data-font-family='inter'] {
+    --font-app-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-app-heading: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-app-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+html[data-font-family='manrope'] {
+    --font-app-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-app-heading: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-app-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.font-preview-ibm-plex {
+    font-family: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-preview-inter {
+    font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-preview-manrope {
+    font-family: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
 }
 
 .dark {
@@ -213,10 +244,9 @@
 }
 
 @theme inline {
-    --font-sans:
-        'Manrope Variable', sans-serif;
-    --font-heading:
-        'Inter Variable', sans-serif;
+    --font-sans: var(--font-app-sans);
+    --font-heading: var(--font-app-heading);
+    --font-mono: var(--font-app-mono);
     --color-sidebar-ring:
         var(--sidebar-ring);
     --color-sidebar-border:

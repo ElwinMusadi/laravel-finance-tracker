@@ -8,6 +8,7 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
 
 class LedgerService
 {
@@ -40,6 +41,21 @@ class LedgerService
             ->sum('amount');
 
         return number_format((float) $sum, 2, '.', '');
+    }
+
+    /**
+     * @param  Collection<int, Category>  $categories
+     * @return Collection<int, string>
+     */
+    public function getExpenseActualsByCategory(Collection $categories, CarbonInterface $monthStart, CarbonInterface $monthEnd): Collection
+    {
+        return Transaction::query()
+            ->whereIn('category_id', $categories->pluck('id'))
+            ->whereBetween('transaction_date', [$monthStart, $monthEnd])
+            ->selectRaw('category_id, SUM(amount) as actual_amount')
+            ->groupBy('category_id')
+            ->pluck('actual_amount', 'category_id')
+            ->map(fn (mixed $amount): string => number_format((float) $amount, 2, '.', ''));
     }
 
     public function getTotalAccountBalance(): string

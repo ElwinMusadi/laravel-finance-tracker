@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
 import AppearanceTabs from '@/components/appearance-tabs';
+import FontFamilySelector from '@/components/font-family-selector';
 import Heading from '@/components/heading';
 import { edit as editAppearance } from '@/routes/appearance';
 
@@ -16,7 +17,10 @@ export default function Appearance() {
                     title="Pengaturan tampilan"
                     description="Perbarui pengaturan tampilan untuk akun Anda"
                 />
-                <AppearanceTabs />
+                <div className="flex flex-col gap-6">
+                    <AppearanceTabs />
+                    <FontFamilySelector />
+                </div>
             </div>
         </>
     );

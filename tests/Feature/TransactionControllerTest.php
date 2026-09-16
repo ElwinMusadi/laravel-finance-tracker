@@ -67,20 +67,20 @@ test('transaction index includes zero balances and excludes inactive accounts', 
             ->where('accounts.0.balance', '0.00'));
 });
 
-test('transaction store preserves the UTC value converted from a local time picker value', function (): void {
+test('transaction store preserves the local date and time selected in Asia Makassar', function (): void {
     $this->actingAs(User::factory()->create());
     $account = Account::factory()->create();
-    $category = Category::factory()->create(['type' => CategoryType::Income]);
+    $category = Category::factory()->create(['type' => CategoryType::Expense]);
 
     $this->post(route('transactions.store'), [
-        'transaction_date' => '2026-09-08T22:30:00.000Z',
-        'amount' => 100,
-        'description' => 'Sarapan',
+        'transaction_date' => '2026-09-01T06:30',
+        'amount' => 103000,
+        'description' => 'Pulsa Listrik',
         'category_id' => $category->id,
         'account_id' => $account->id,
     ])->assertRedirect();
 
     $this->assertDatabaseHas('transactions', [
-        'transaction_date' => '2026-09-08 22:30:00',
+        'transaction_date' => '2026-09-01 06:30:00',
     ]);
 });

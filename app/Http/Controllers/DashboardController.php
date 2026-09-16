@@ -6,6 +6,7 @@ use App\Enums\CategoryType;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Services\LedgerService;
+use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -44,18 +45,11 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // 6-Month Cash Flow Trend
-        $cashFlowTrend = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $monthDate = $now->copy()->subMonths($i);
-            $mStart = $monthDate->copy()->startOfMonth();
-            $mEnd = $monthDate->copy()->endOfMonth();
-            $cashFlowTrend[] = [
-                'month' => $monthDate->translatedFormat('M Y'),
-                'income' => (float) $this->ledger->getTotalIncome($mStart, $mEnd),
-                'expense' => (float) $this->ledger->getTotalExpenses($mStart, $mEnd),
-            ];
-        }
+        $cashFlowTrend = $this->cashFlowByMonth($now, 6);
+        $cashFlowCurrentMonth = $this->cashFlowByDay(
+            $startOfMonth,
+            $now->copy()->endOfDay(),
+        );
 
         return Inertia::render('dashboard', [
             'metrics' => [
@@ -71,8 +65,59 @@ class DashboardController extends Controller
                 'budgetUsedPercentage' => round($budgetUsedPercentage, 1),
             ],
             'cashFlowTrend' => $cashFlowTrend,
+            'cashFlowCurrentMonth' => $cashFlowCurrentMonth,
             'recentTransactions' => $recentTransactions,
             'currentMonth' => $now->translatedFormat('F Y'),
         ]);
+    }
+
+    /**
+     * @return array<int, array{month: string, income: float, expense: float}>
+     */
+    private function cashFlowByMonth(CarbonInterface $now, int $months): array
+    {
+        $cashFlowTrend = [];
+
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $monthDate = $now->copy()->subMonthsNoOverflow($i);
+            $start = $monthDate->copy()->startOfMonth();
+            $end = $monthDate->copy()->endOfMonth();
+            $cashFlowTrend[] = [
+                'month' => $monthDate->translatedFormat('M Y'),
+                'income' => (float) $this->ledger->getTotalIncome($start, $end),
+                'expense' => (float) $this->ledger->getTotalExpenses($start, $end),
+            ];
+        }
+
+        return $cashFlowTrend;
+    }
+
+    /**
+     * @return array<int, array{month: string, income: float, expense: float}>
+     */
+    private function cashFlowByDay(CarbonInterface $start, CarbonInterface $end): array
+    {
+        $dailyCashFlow = Transaction::query()
+            ->join('categories', 'categories.id', '=', 'transactions.category_id')
+            ->whereBetween('transactions.transaction_date', [$start, $end])
+            ->whereIn('categories.type', [CategoryType::Income->value, CategoryType::Expense->value])
+            ->selectRaw('DATE(transactions.transaction_date) as transaction_day')
+            ->selectRaw('SUM(CASE WHEN categories.type = ? THEN transactions.amount ELSE 0 END) as income', [CategoryType::Income->value])
+            ->selectRaw('SUM(CASE WHEN categories.type = ? THEN transactions.amount ELSE 0 END) as expense', [CategoryType::Expense->value])
+            ->groupBy('transaction_day')
+            ->get()
+            ->keyBy('transaction_day');
+        $cashFlowTrend = [];
+
+        for ($day = $start->copy(); $day->lte($end); $day = $day->addDay()) {
+            $dayKey = $day->toDateString();
+            $cashFlowTrend[] = [
+                'month' => $day->translatedFormat('j M'),
+                'income' => (float) ($dailyCashFlow->get($dayKey)?->income ?? 0),
+                'expense' => (float) ($dailyCashFlow->get($dayKey)?->expense ?? 0),
+            ];
+        }
+
+        return $cashFlowTrend;
     }
 }

@@ -1,7 +1,7 @@
 export type AccountBrand = {
     name: string;
     accentColor: string;
-    logoUrl: string;
+    logoUrl?: string;
 };
 
 type AccountBrandDefinition = AccountBrand & {
@@ -20,6 +20,17 @@ const accountBrands: AccountBrandDefinition[] = [
         aliases: ['gopay', 'go pay'],
         accentColor: '#00AED6',
         logoUrl: '/images/account-brands/gopay.webp',
+    },
+    {
+        name: 'Cash',
+        aliases: ['cash'],
+        accentColor: '#14B8A6',
+    },
+    {
+        name: 'Bank NTT',
+        aliases: ['bank ntt'],
+        accentColor: '#28166f',
+        logoUrl: '/images/account-brands/logo-bank-ntt.png',
     },
 ];
 
@@ -48,6 +59,6 @@ export function resolveAccountBrand(name: string): AccountBrand | null {
     return {
         name: brand.name,
         accentColor: brand.accentColor,
-        logoUrl: brand.logoUrl,
+        ...(brand.logoUrl ? { logoUrl: brand.logoUrl } : {}),
     };
 }

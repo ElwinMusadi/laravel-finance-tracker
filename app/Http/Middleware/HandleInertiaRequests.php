@@ -41,6 +41,9 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'appearance' => [
+                'fontFamily' => $this->fontFamily($request),
+            ],
             'auth' => [
                 'user' => $request->user(),
             ],
@@ -55,5 +58,14 @@ class HandleInertiaRequests extends Middleware
                 'info' => $request->session()->get('info'),
             ],
         ];
+    }
+
+    private function fontFamily(Request $request): string
+    {
+        $fontFamily = $request->cookie('font_family');
+
+        return in_array($fontFamily, ['ibm-plex', 'inter', 'manrope'], true)
+            ? $fontFamily
+            : 'ibm-plex';
     }
 }

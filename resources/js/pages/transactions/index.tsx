@@ -55,6 +55,7 @@ import {
   IconChevronLeft,
   IconChevronRight,
   IconWallet,
+  IconCirclePlusFilled,
 } from "@tabler/icons-react";
 
 type Account = {
@@ -272,7 +273,7 @@ export default function TransactionsIndex({
             onClick={openModal}
             className="shadow-xs self-start sm:self-auto"
           >
-            <IconPlus className="mr-1.5 size-4" />
+            <IconCirclePlusFilled className="size-4" />
             Tambah Transaksi
           </Button>
         </div>
@@ -311,7 +312,7 @@ export default function TransactionsIndex({
                 tabIndex={0}
                 aria-label="Daftar saldo akun, geser horizontal untuk melihat akun lain."
                 onScroll={updateAccountBalanceOverflow}
-                className="no-scrollbar flex snap-x snap-mandatory flex-nowrap gap-3 overflow-x-auto overscroll-x-contain scroll-smooth rounded-xl pb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="no-scrollbar flex snap-x snap-mandatory flex-nowrap gap-3 overflow-x-auto overscroll-x-contain scroll-smooth rounded-xl py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 {accounts.map((account) => {
                   const numericBalance = Number(account.balance);
@@ -324,7 +325,7 @@ export default function TransactionsIndex({
                       key={account.id}
                       size="sm"
                       className={cn(
-                        "w-[82%] shrink-0 snap-start border-l-4 sm:w-[calc(50%_-_0.375rem)] lg:w-[calc(33.333%_-_0.5rem)] xl:w-[calc(25%_-_0.5625rem)]",
+                        "w-[82%] shrink-0 snap-start border-l-4 sm:w-[calc(50%-0.375rem)] lg:w-[calc(33.333%-0.5rem)] xl:w-[calc(25%-0.5625rem)]",
                         !brand && "border-l-primary",
                       )}
                       style={

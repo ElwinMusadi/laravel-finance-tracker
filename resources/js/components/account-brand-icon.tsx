@@ -14,7 +14,8 @@ export function AccountBrandIcon({
     iconClassName?: string;
 }) {
     const [hasImageError, setHasImageError] = useState(false);
-    const shouldShowLogo = brand !== null && !hasImageError;
+    const logoUrl = brand?.logoUrl;
+    const shouldShowLogo = Boolean(logoUrl) && !hasImageError;
 
     return (
         <div
@@ -26,7 +27,7 @@ export function AccountBrandIcon({
         >
             {shouldShowLogo ? (
                 <img
-                    src={brand.logoUrl}
+                    src={logoUrl!}
                     alt=""
                     aria-hidden="true"
                     className={cn('object-contain', iconClassName)}
